@@ -81,11 +81,23 @@ body {
     transform: scale(1.02) translateX(4px);
 }
 
+.about-me-tag {
+    animation: floating 3s ease-in-out infinite;
+    backdrop-filter: blur(5px);
+}
+
+@keyframes floating {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-5px); }
+    100% { transform: translateY(0px); }
+}
+
 .typewriter {
+    display: inline-block;
     overflow: hidden;
     white-space: nowrap;
     border-right: 2px solid #3b82f6;
-    animation: typing 3.5s steps(40, end), blink-caret 0.75s step-end infinite;
+    animation: typing 2.5s steps(30, end), blink-caret 0.75s step-end infinite;
 }
 
 @keyframes typing {
