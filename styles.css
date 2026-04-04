@@ -1,16 +1,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
+* {
+    cursor: default;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-user-drag: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+a, a *, button, .cursor-pointer {
+    cursor: pointer !important;
+}
+
 body {
     font-family: 'Inter', sans-serif;
     background-color: #87CEEB; /* Match the sky blue background */
     overflow: hidden;
     margin: 0;
     padding: 0;
-    cursor: default;
-    user-select: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
 }
 
 .background-wrapper {
