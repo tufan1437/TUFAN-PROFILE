@@ -9,6 +9,9 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body class="bg-black text-white selection:bg-white/20">
+    <div class="background-wrapper">
+        <div class="background-image"></div>
+    </div>
     <div id="particles-js"></div>
 
     <main class="relative min-h-screen flex items-center justify-center p-4">
@@ -94,13 +97,18 @@
     <script>
         particlesJS("particles-js", {
             "particles": {
-                "number": { "value": 80, "density": { "enable": true, "value_area": 800 } },
-                "color": { "value": "#3b82f6" },
+                "number": { "value": 120, "density": { "enable": true, "value_area": 800 } },
+                "color": { "value": "#ffffff" },
                 "shape": { "type": "circle" },
-                "opacity": { "value": 0.4, "random": false },
-                "size": { "value": 2, "random": true },
+                "opacity": { "value": 0.5, "random": true, "anim": { "enable": true, "speed": 1, "opacity_min": 0.1, "sync": false } },
+                "size": { "value": 3, "random": true, "anim": { "enable": true, "speed": 2, "size_min": 0.1, "sync": false } },
                 "line_linked": { "enable": false },
-                "move": { "enable": true, "speed": 1, "direction": "top", "random": true, "straight": false, "out_mode": "out" }
+                "move": { "enable": true, "speed": 0.8, "direction": "top-right", "random": true, "straight": false, "out_mode": "out" }
+            },
+            "interactivity": {
+                "detect_on": "canvas",
+                "events": { "onhover": { "enable": true, "mode": "bubble" }, "onclick": { "enable": true, "mode": "push" } },
+                "modes": { "bubble": { "distance": 250, "size": 0, "duration": 2, "opacity": 0, "speed": 3 }, "push": { "particles_nb": 4 } }
             }
         });
     </script>
