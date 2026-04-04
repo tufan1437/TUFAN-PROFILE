@@ -122,9 +122,28 @@
         // View Counter Logic
         async function updateViewCount() {
             try {
-                const response = await fetch('https://api.counterapi.dev/v1/tufan1437.github.io/profile-views/up');
+                const namespace = 'tufan1437.github.io';
+                const name = 'profile-views';
+                const storageKey = 'visited_tufan_profile';
+                
+                // Check if this person has already been counted
+                const hasVisited = localStorage.getItem(storageKey);
+                
+                // If new visitor, use '/up' to increase. If returning, just get the current count.
+                const endpoint = hasVisited ? 
+                    `https://api.counterapi.dev/v1/${namespace}/${name}` : 
+                    `https://api.counterapi.dev/v1/${namespace}/${name}/up`;
+
+                const response = await fetch(endpoint);
                 const data = await response.json();
-                document.getElementById('view-count').innerText = data.count.toLocaleString();
+                
+                if (!hasVisited) {
+                    localStorage.setItem(storageKey, 'true');
+                }
+
+                // Start counting from 1,337
+                const totalViews = data.count + 1337;
+                document.getElementById('view-count').innerText = totalViews.toLocaleString();
             } catch (error) {
                 console.error('Error fetching view count:', error);
                 document.getElementById('view-count').innerText = '1,337+';
