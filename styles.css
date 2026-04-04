@@ -6,6 +6,11 @@ body {
     overflow: hidden;
     margin: 0;
     padding: 0;
+    cursor: default;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
 }
 
 .background-wrapper {
@@ -52,7 +57,7 @@ body {
 .glass-card {
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(25px) saturate(150%);
-    box-shadow: 0 0 100px -20px rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 100px -20px rgba(255, 255, 255, 0.2), 0 0 40px -10px rgba(59, 130, 246, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.2);
     transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -69,8 +74,8 @@ body {
 }
 
 .glass-card:hover {
-    border-color: rgba(255, 255, 255, 0.1);
-    box-shadow: 0 0 150px -20px rgba(59, 130, 246, 0.3);
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 150px -20px rgba(255, 255, 255, 0.3), 0 0 60px -10px rgba(59, 130, 246, 0.5);
 }
 
 .social-button {
@@ -79,6 +84,8 @@ body {
 
 .social-button:hover {
     transform: scale(1.02) translateX(4px);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
 }
 
 .about-me-tag {
@@ -112,6 +119,15 @@ body {
 
 .verified-badge {
     text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+}
+
+h1 {
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+}
+
+.text-sky-400 {
+    text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
 }
 
 .animate-fade-in {
