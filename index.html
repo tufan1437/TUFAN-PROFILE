@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>guns.lol | @yourname</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-black text-white selection:bg-white/20">
+    <div id="particles-js"></div>
+
+    <main class="relative min-h-screen flex items-center justify-center p-4">
+        <!-- Profile Container -->
+        <div class="profile-container w-full max-w-[450px] relative z-10 animate-fade-in">
+            <!-- Background Card -->
+            <div class="glass-card rounded-[2rem] p-8 text-center overflow-hidden border border-white/5 relative">
+                
+                <!-- Profile Header -->
+                <div class="relative mb-6">
+                    <div class="avatar-container inline-block p-1 rounded-full bg-gradient-to-tr from-purple-500 to-blue-500 shadow-2xl">
+                        <img src="https://i.pravatar.cc/150?u=yourname" alt="Avatar" class="w-24 h-24 rounded-full object-cover border-2 border-black">
+                    </div>
+                    <div class="mt-4">
+                        <div class="flex items-center justify-center gap-2">
+                            <h1 class="text-3xl font-bold tracking-tight">yourname</h1>
+                            <span class="verified-badge bg-blue-500 text-[10px] px-1.5 py-0.5 rounded-md font-black uppercase">Verified</span>
+                        </div>
+                        <p class="text-zinc-400 text-sm mt-1 font-medium">@yourusername</p>
+                    </div>
+                </div>
+
+                <!-- Description / Bio -->
+                <div class="bio-section mb-8 px-4">
+                    <p class="text-zinc-300 text-sm leading-relaxed typewriter">
+                        Software Engineer & Content Creator.
+                    </p>
+                </div>
+
+                <!-- Social Links -->
+                <div class="links-container space-y-3">
+                    <a href="#" class="social-button group flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/20 transition-all duration-300">
+                        <div class="flex items-center gap-3">
+                            <i class="fab fa-discord text-xl text-[#5865F2]"></i>
+                            <span class="font-semibold text-sm">Discord</span>
+                        </div>
+                        <i class="fas fa-chevron-right text-xs text-zinc-500 group-hover:text-white transition-colors"></i>
+                    </a>
+
+                    <a href="#" class="social-button group flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/20 transition-all duration-300">
+                        <div class="flex items-center gap-3">
+                            <i class="fab fa-github text-xl"></i>
+                            <span class="font-semibold text-sm">GitHub</span>
+                        </div>
+                        <i class="fas fa-chevron-right text-xs text-zinc-500 group-hover:text-white transition-colors"></i>
+                    </a>
+
+                    <a href="#" class="social-button group flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/20 transition-all duration-300">
+                        <div class="flex items-center gap-3">
+                            <i class="fab fa-instagram text-xl text-[#E4405F]"></i>
+                            <span class="font-semibold text-sm">Instagram</span>
+                        </div>
+                        <i class="fas fa-chevron-right text-xs text-zinc-500 group-hover:text-white transition-colors"></i>
+                    </a>
+
+                    <a href="#" class="social-button group flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/20 transition-all duration-300">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-envelope text-xl text-blue-400"></i>
+                            <span class="font-semibold text-sm">Contact</span>
+                        </div>
+                        <i class="fas fa-chevron-right text-xs text-zinc-500 group-hover:text-white transition-colors"></i>
+                    </a>
+                </div>
+
+                <!-- Footer / Badges -->
+                <div class="mt-8 pt-6 border-t border-white/5 flex justify-center gap-4 grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all duration-500">
+                    <i class="fab fa-spotify text-xl"></i>
+                    <i class="fab fa-steam text-xl"></i>
+                    <i class="fab fa-twitch text-xl"></i>
+                </div>
+            </div>
+
+            <!-- Profile Views Counter (Floating) -->
+            <div class="mt-4 text-center">
+                <span class="text-[10px] text-zinc-600 font-bold uppercase tracking-[0.2em]">
+                    <i class="far fa-eye mr-1"></i> 1,337 views
+                </span>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script>
+        particlesJS("particles-js", {
+            "particles": {
+                "number": { "value": 80, "density": { "enable": true, "value_area": 800 } },
+                "color": { "value": "#ffffff" },
+                "shape": { "type": "circle" },
+                "opacity": { "value": 0.2, "random": false },
+                "size": { "value": 2, "random": true },
+                "line_linked": { "enable": false },
+                "move": { "enable": true, "speed": 1, "direction": "top", "random": true, "straight": false, "out_mode": "out" }
+            }
+        });
+    </script>
+</body>
+</html>
