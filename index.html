@@ -14,6 +14,45 @@
     </div>
     <div id="particles-js"></div>
 
+    <!-- Audio Control -->
+    <div class="audio-control fixed left-6 bottom-6 z-50 group">
+        <button id="audio-btn" class="audio-button relative flex items-center justify-center w-14 h-14 rounded-2xl glass-card border border-white/10 transition-all duration-300 overflow-hidden">
+            <i class="fas fa-music text-xl text-sky-400 group-hover:text-white transition-colors"></i>
+            <span class="sound-waves absolute inset-0 flex items-center justify-center gap-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                <span class="wave wave-1 bg-sky-400/80 rounded-full"></span>
+                <span class="wave wave-2 bg-sky-400/80 rounded-full"></span>
+                <span class="wave wave-3 bg-sky-400/80 rounded-full"></span>
+                <span class="wave wave-4 bg-sky-400/80 rounded-full"></span>
+                <span class="wave wave-5 bg-sky-400/80 rounded-full"></span>
+            </span>
+        </button>
+
+        <!-- Sound Bar (Appears on Hover) -->
+        <div class="sound-bar absolute left-full ml-4 bottom-0 px-5 py-4 rounded-2xl glass-card border border-white/10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-400 translate-x-[-10px] group-hover:translate-x-0 min-w-[220px]">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-[11px] font-bold uppercase tracking-[0.2em] text-sky-400">Sound</span>
+                <span id="volume-percent" class="text-[11px] font-bold text-white/80">50%</span>
+            </div>
+            
+            <div class="volume-slider-container relative mb-4">
+                <input type="range" id="volume-slider" min="0" max="100" value="50" class="volume-slider w-full">
+                <div class="slider-track absolute top-1/2 left-0 h-1.5 w-full -translate-y-1/2 rounded-full bg-white/10"></div>
+                <div id="slider-fill" class="slider-fill absolute top-1/2 left-0 h-1.5 -translate-y-1/2 rounded-full bg-gradient-to-r from-sky-500 to-sky-300 w-1/2"></div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button id="mute-btn" class="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300">
+                    <i class="fas fa-volume-up text-sm text-white/70"></i>
+                    <span class="text-xs font-semibold text-white/80">Mute</span>
+                </button>
+                <button id="track-btn" class="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300">
+                    <i class="fas fa-forward text-sm text-white/70"></i>
+                    <span class="text-xs font-semibold text-white/80">Next</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <main class="relative min-h-screen flex items-center justify-center p-4">
         <!-- Profile Container -->
         <div class="profile-container w-full max-w-[450px] relative z-10 animate-fade-in">
@@ -42,7 +81,7 @@
                         <span class="text-xs font-bold uppercase tracking-[0.25em] text-sky-400">About Me</span>
                     </div>
                     <p class="text-white text-lg font-bold tracking-tight typewriter">
-                        MY BIRTHDAY <span class="text-sky-400">2008/04/23</span>
+                        MY BIRTHDAY <span class="text-sky-400">2007/04/23</span>
                     </p>
                 </div>
 
@@ -150,6 +189,53 @@
             }
         }
         updateViewCount();
+
+        // =============== Audio / Volume Slider Logic ===============
+        const volumeSlider = document.getElementById('volume-slider');
+        const sliderFill = document.getElementById('slider-fill');
+        const volumePercent = document.getElementById('volume-percent');
+        const muteBtn = document.getElementById('mute-btn');
+        const audioBtn = document.getElementById('audio-btn');
+        let lastVolume = 50;
+        let isMuted = false;
+
+        function updateVolumeUI(value) {
+            const percent = value + '%';
+            sliderFill.style.width = percent;
+            volumePercent.textContent = percent;
+        }
+
+        volumeSlider.addEventListener('input', (e) => {
+            const value = e.target.value;
+            updateVolumeUI(value);
+            if (value > 0) {
+                isMuted = false;
+                lastVolume = value;
+                muteBtn.querySelector('i').className = 'fas fa-volume-up text-sm text-white/70';
+                muteBtn.querySelector('span').textContent = 'Mute';
+            } else {
+                isMuted = true;
+                muteBtn.querySelector('i').className = 'fas fa-volume-mute text-sm text-white/70';
+                muteBtn.querySelector('span').textContent = 'Unmute';
+            }
+        });
+
+        muteBtn.addEventListener('click', () => {
+            if (isMuted) {
+                isMuted = false;
+                volumeSlider.value = lastVolume;
+                updateVolumeUI(lastVolume);
+                muteBtn.querySelector('i').className = 'fas fa-volume-up text-sm text-white/70';
+                muteBtn.querySelector('span').textContent = 'Mute';
+            } else {
+                isMuted = true;
+                lastVolume = volumeSlider.value || 50;
+                volumeSlider.value = 0;
+                updateVolumeUI(0);
+                muteBtn.querySelector('i').className = 'fas fa-volume-mute text-sm text-white/70';
+                muteBtn.querySelector('span').textContent = 'Unmute';
+            }
+        });
     </script>
 </body>
 </html>
