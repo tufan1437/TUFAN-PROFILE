@@ -179,37 +179,121 @@
             }
         });
 
-        // View Counter Logic - UNIQUE VISITORS ONLY (1 count per user forever)
+        // View Counter Logic - ADVANCED v3 (RELIABLE UNIQUE VISITORS ONLY)
         async function updateViewCount() {
+            const BASE_VIEWS = 1377;
+            const STORAGE_KEY = 'tufan_v6_unique';     // Permanently flags unique user
+            const CACHED_TOTAL = 'tufan_v6_total';     // Cached latest total count
+            const PAGE_ID = encodeURIComponent('aura.tufanprofile.xyz');
+
+            function isAlreadyCounted() {
+                try { return localStorage.getItem(STORAGE_KEY) !== null; }
+                catch(e) { return false; }
+            }
+            function markCounted(fp) {
+                try { localStorage.setItem(STORAGE_KEY, JSON.stringify({t:Date.now(), fp})); } catch(e) {}
+            }
+            function fpHash(s) {
+                let h = 2166136261;
+                for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+                return (h >>> 0).toString(36);
+            }
+            function getCachedTotal() {
+                try { return parseInt(localStorage.getItem(CACHED_TOTAL) || '0', 10); }
+                catch(e) { return 0; }
+            }
+            function setCachedTotal(n) {
+                try { localStorage.setItem(CACHED_TOTAL, String(n)); } catch(e) {}
+            }
+            async function getFingerprint() {
+                let ip = '';
+                try {
+                    const r = await fetch('https://api.myip.com', { cache: 'force-cache' });
+                    if (r.ok) {
+                        const d = await r.json();
+                        ip = d.ip || '';
+                    }
+                } catch(e) {}
+                const raw = [
+                    ip,
+                    navigator.userAgent,
+                    navigator.language,
+                    navigator.platform,
+                    screen.width + 'x' + screen.height,
+                    new Date().getTimezoneOffset()
+                ].join('|');
+                return fpHash(raw);
+            }
+
+            // ========== PRIMARY: hits.seeyoufarm.com (only call INCR for NEW unique visitors) ==========
+            async function hitsSYF_incr() {
+                const url = `https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=${PAGE_ID}&count_bg=%23000000&title_bg=%23000000&icon_color=%23FFFFFF&icon=github&title=visitors`;
+                const r = await fetch(url, { cache: 'no-store' });
+                const text = await r.text();
+                const matches = text.match(/(\d+(?:[.,]\d+)*)\s*\/\s*(\d+(?:[.,]\d+)*)/);
+                if (!matches) throw new Error('SVG parse fail');
+                const total = parseInt(matches[2].replace(/[.,]/g, ''), 10);
+                return total;
+            }
+
+            // ========== FALLBACK: countapi.xyz — has separate get vs hit endpoints ==========
+            const NS = 'tufan-v6';
+            const KEY = 'aura-unique-visitors';
+            async function countAPI_increment() {
+                const r = await fetch(`https://api.countapi.xyz/hit/${NS}/${KEY}`, { cache: 'no-store' });
+                if (!r.ok) throw new Error('countapi fail');
+                const d = await r.json();
+                return (typeof d.value === 'number') ? d.value : 0;
+            }
+            async function countAPI_getOnly() {
+                try {
+                    const r = await fetch(`https://api.countapi.xyz/get/${NS}/${KEY}`, { cache: 'no-store' });
+                    if (!r.ok) return 0;
+                    const d = await r.json();
+                    return (typeof d.value === 'number') ? d.value : 0;
+                } catch(e) { return 0; }
+            }
+
+            // ========== MAIN ==========
             try {
-                const namespace = 'tufan-profile';
-                const name = 'aura-views';
-                const storageKey = 'tufan_unique_visitor_v3'; // Permanent (never cleared unless user wipes cache)
-                const BASE_VIEWS = 1377;
+                await getFingerprint(); // pre-warm network
+                const counted = isAlreadyCounted();
+                let totalUnique = 0;
 
-                const alreadyCounted = localStorage.getItem(storageKey);
-
-                // Only hit/increment if this user has NEVER been counted before
-                const endpoint = alreadyCounted
-                    ? `https://api.countapi.xyz/get/${namespace}/${name}`
-                    : `https://api.countapi.xyz/hit/${namespace}/${name}`;
-
-                const response = await fetch(endpoint);
-                if (!response.ok) throw new Error('Counter API down');
-                const data = await response.json();
-
-                // Mark them as counted PERMANENTLY (even across sessions)
-                if (!alreadyCounted) {
-                    localStorage.setItem(storageKey, new Date().toISOString());
+                if (counted) {
+                    // ✅ RETURN VISITOR - DO NOT INCREMENT ANYTHING
+                    // Try countapi GET first (free fetch), fallback to cached total
+                    totalUnique = await countAPI_getOnly();
+                    if (totalUnique <= 0) totalUnique = getCachedTotal();
+                } else {
+                    // 🆕 NEW UNIQUE VISITOR - INCREMENT ONCE!
+                    let incrOk = false;
+                    try {
+                        totalUnique = await hitsSYF_incr(); // Primary increment
+                        incrOk = true;
+                    } catch(e) {}
+                    if (!incrOk) {
+                        try {
+                            totalUnique = await countAPI_increment(); // Fallback increment
+                            incrOk = true;
+                        } catch(e) {}
+                    }
+                    if (!incrOk) {
+                        // Emergency: local-only counter
+                        totalUnique = getCachedTotal() + 1;
+                    }
+                    setCachedTotal(totalUnique);
+                    markCounted('v6');
                 }
 
-                const realCount = (data.value || 0);
-                const displayCount = BASE_VIEWS + realCount;
-                document.getElementById('view-count').innerText = displayCount.toLocaleString();
+                const visitors = Math.max(1, totalUnique || 0);
+                const display = BASE_VIEWS + visitors;
+                document.getElementById('view-count').innerText = display.toLocaleString();
 
-            } catch (error) {
-                console.warn('Counter API unreachable:', error);
-                document.getElementById('view-count').innerText = '1,377+';
+            } catch (err) {
+                console.error('Counter degraded:', err);
+                const minShow = BASE_VIEWS + Math.max(1, getCachedTotal() || 1);
+                document.getElementById('view-count').innerText = minShow.toLocaleString();
             }
         }
         updateViewCount();
