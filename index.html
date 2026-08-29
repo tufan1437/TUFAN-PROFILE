@@ -14,10 +14,13 @@
     </div>
     <div id="particles-js"></div>
 
+    <!-- Audio Player -->
+    <audio id="bg-audio" loop preload="auto"></audio>
+
     <!-- Audio Control -->
     <div class="audio-control fixed left-6 top-6 z-50 group">
         <button id="audio-btn" class="audio-button relative flex items-center justify-center w-14 h-14 rounded-2xl glass-card border border-white/10 transition-all duration-300 overflow-hidden">
-            <i class="fas fa-music text-xl text-sky-400 group-hover:text-white transition-colors"></i>
+            <i id="audio-main-icon" class="fas fa-music text-xl text-sky-400 group-hover:text-white transition-colors"></i>
             <span class="sound-waves absolute inset-0 flex items-center justify-center gap-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
                 <span class="wave wave-1 bg-sky-400/80 rounded-full"></span>
                 <span class="wave wave-2 bg-sky-400/80 rounded-full"></span>
@@ -28,7 +31,20 @@
         </button>
 
         <!-- Sound Bar (Appears on Hover) -->
-        <div class="sound-bar absolute left-full ml-4 top-0 px-5 py-4 rounded-2xl glass-card border border-white/10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-400 translate-x-[-10px] group-hover:translate-x-0 min-w-[220px]">
+        <div class="sound-bar absolute left-full ml-4 top-0 px-5 py-4 rounded-2xl glass-card border border-white/10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-400 translate-x-[-10px] group-hover:translate-x-0 min-w-[240px]">
+            <!-- Now Playing -->
+            <div class="mb-3 pb-3 border-b border-white/5">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-sky-400/90">Now Playing</span>
+                    <span id="track-index" class="text-[10px] font-bold text-white/50">01 / 03</span>
+                </div>
+                <div class="flex items-center gap-2 min-h-[24px]">
+                    <i class="fas fa-play-circle text-sky-400 text-sm animate-pulse-play"></i>
+                    <span id="track-name" class="text-sm font-bold text-white truncate">Add songs to music/</span>
+                </div>
+            </div>
+
+            <!-- Volume Row -->
             <div class="flex items-center justify-between mb-3">
                 <span class="text-[11px] font-bold uppercase tracking-[0.2em] text-sky-400">Sound</span>
                 <span id="volume-percent" class="text-[11px] font-bold text-white/80">50%</span>
@@ -40,7 +56,12 @@
                 <div id="slider-fill" class="slider-fill absolute top-1/2 left-0 h-1.5 -translate-y-1/2 rounded-full bg-gradient-to-r from-sky-500 to-sky-300 w-1/2"></div>
             </div>
 
+            <!-- Action Buttons -->
             <div class="flex items-center gap-2">
+                <button id="play-pause-btn" class="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300">
+                    <i id="play-pause-icon" class="fas fa-play text-sm text-white/70"></i>
+                    <span id="play-pause-text" class="text-xs font-semibold text-white/80">Play</span>
+                </button>
                 <button id="mute-btn" class="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300">
                     <i class="fas fa-volume-up text-sm text-white/70"></i>
                     <span class="text-xs font-semibold text-white/80">Mute</span>
@@ -190,14 +211,40 @@
         }
         updateViewCount();
 
-        // =============== Audio / Volume Slider Logic ===============
+        // =============== FULL AUDIO PLAYER LOGIC ===============
+        const audio = document.getElementById('bg-audio');
         const volumeSlider = document.getElementById('volume-slider');
         const sliderFill = document.getElementById('slider-fill');
         const volumePercent = document.getElementById('volume-percent');
         const muteBtn = document.getElementById('mute-btn');
         const audioBtn = document.getElementById('audio-btn');
+        const audioMainIcon = document.getElementById('audio-main-icon');
+        const trackBtn = document.getElementById('track-btn');
+        const playPauseBtn = document.getElementById('play-pause-btn');
+        const playPauseIcon = document.getElementById('play-pause-icon');
+        const playPauseText = document.getElementById('play-pause-text');
+        const trackName = document.getElementById('track-name');
+        const trackIndex = document.getElementById('track-index');
+
+        // =============== PLAYLIST - Add your songs here! ===============
+        // 1. Put .mp3 files inside the music/ folder
+        // 2. Add entries below matching filenames + display name
+        // Example: { file: 'music/your-song.mp3', name: 'Song Name - Artist' }
+        const playlist = [
+            { file: 'music/song1.mp3', name: 'Track 1' },
+            { file: 'music/song2.mp3', name: 'Track 2' },
+            { file: 'music/song3.mp3', name: 'Track 3' }
+        ];
+
+        let currentTrack = 0;
         let lastVolume = 50;
         let isMuted = false;
+        let isPlaying = false;
+
+        // Initial volume
+        audio.volume = 0.5;
+
+        function pad(n) { return n < 10 ? '0' + n : '' + n; }
 
         function updateVolumeUI(value) {
             const percent = value + '%';
@@ -205,37 +252,158 @@
             volumePercent.textContent = percent;
         }
 
+        function updateMuteUI() {
+            const icon = muteBtn.querySelector('i');
+            const text = muteBtn.querySelector('span');
+            if (isMuted || Number(volumeSlider.value) === 0) {
+                icon.className = 'fas fa-volume-mute text-sm text-white/70';
+                text.textContent = 'Unmute';
+            } else {
+                icon.className = 'fas fa-volume-up text-sm text-white/70';
+                text.textContent = 'Mute';
+            }
+        }
+
+        function updatePlayStateUI() {
+            if (isPlaying) {
+                playPauseIcon.className = 'fas fa-pause text-sm text-white/70';
+                playPauseText.textContent = 'Pause';
+                audioMainIcon.className = 'fas fa-headphones text-xl text-sky-300 group-hover:text-white transition-colors';
+                audioBtn.classList.add('is-playing-glow');
+            } else {
+                playPauseIcon.className = 'fas fa-play text-sm text-white/70';
+                playPauseText.textContent = 'Play';
+                audioMainIcon.className = 'fas fa-music text-xl text-sky-400 group-hover:text-white transition-colors';
+                audioBtn.classList.remove('is-playing-glow');
+            }
+        }
+
+        function updateTrackUI() {
+            const track = playlist[currentTrack];
+            if (!track) {
+                trackName.textContent = 'Add songs to music/';
+                trackIndex.textContent = '00 / 00';
+                return;
+            }
+            trackName.textContent = track.name;
+            trackIndex.textContent = pad(currentTrack + 1) + ' / ' + pad(playlist.length);
+        }
+
+        function loadTrack(index, autoplay = false) {
+            if (playlist.length === 0) return;
+            currentTrack = (index + playlist.length) % playlist.length;
+            const track = playlist[currentTrack];
+            audio.src = track.file;
+            audio.load();
+            updateTrackUI();
+            if (autoplay) {
+                playAudio();
+            }
+        }
+
+        function playAudio() {
+            if (playlist.length === 0) {
+                trackName.textContent = '⚠️ Put MP3s in music/ folder';
+                trackName.style.color = '#f87171';
+                setTimeout(() => { trackName.style.color = ''; updateTrackUI(); }, 2500);
+                return;
+            }
+            audio.play().then(() => {
+                isPlaying = true;
+                updatePlayStateUI();
+            }).catch(err => {
+                console.warn('Autoplay blocked - click Play button manually:', err);
+                isPlaying = false;
+                updatePlayStateUI();
+            });
+        }
+
+        function pauseAudio() {
+            audio.pause();
+            isPlaying = false;
+            updatePlayStateUI();
+        }
+
+        function togglePlayPause() {
+            if (isPlaying) pauseAudio();
+            else playAudio();
+        }
+
+        // =============== EVENT LISTENERS ===============
+
+        // Big audio button = toggle play/pause
+        audioBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (!audio.src && playlist.length > 0) loadTrack(0, true);
+            else togglePlayPause();
+        });
+
+        // Play/Pause button inside sound bar
+        playPauseBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (!audio.src && playlist.length > 0) loadTrack(0, true);
+            else togglePlayPause();
+        });
+
+        // Next Track button
+        trackBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const wasPlaying = isPlaying;
+            loadTrack(currentTrack + 1, wasPlaying);
+        });
+
+        // Volume slider
         volumeSlider.addEventListener('input', (e) => {
-            const value = e.target.value;
+            const value = Number(e.target.value);
+            audio.volume = value / 100;
             updateVolumeUI(value);
             if (value > 0) {
                 isMuted = false;
+                audio.muted = false;
                 lastVolume = value;
-                muteBtn.querySelector('i').className = 'fas fa-volume-up text-sm text-white/70';
-                muteBtn.querySelector('span').textContent = 'Mute';
             } else {
                 isMuted = true;
-                muteBtn.querySelector('i').className = 'fas fa-volume-mute text-sm text-white/70';
-                muteBtn.querySelector('span').textContent = 'Unmute';
+                audio.muted = true;
             }
+            updateMuteUI();
         });
 
-        muteBtn.addEventListener('click', () => {
-            if (isMuted) {
+        // Mute button
+        muteBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (isMuted || audio.muted) {
                 isMuted = false;
-                volumeSlider.value = lastVolume;
-                updateVolumeUI(lastVolume);
-                muteBtn.querySelector('i').className = 'fas fa-volume-up text-sm text-white/70';
-                muteBtn.querySelector('span').textContent = 'Mute';
+                audio.muted = false;
+                const restore = lastVolume > 0 ? lastVolume : 50;
+                volumeSlider.value = restore;
+                audio.volume = restore / 100;
+                updateVolumeUI(restore);
             } else {
                 isMuted = true;
-                lastVolume = volumeSlider.value || 50;
+                audio.muted = true;
+                lastVolume = Number(volumeSlider.value) || 50;
                 volumeSlider.value = 0;
                 updateVolumeUI(0);
-                muteBtn.querySelector('i').className = 'fas fa-volume-mute text-sm text-white/70';
-                muteBtn.querySelector('span').textContent = 'Unmute';
             }
+            updateMuteUI();
         });
+
+        // Auto-next when song ends (cycle playlist)
+        audio.addEventListener('ended', () => {
+            loadTrack(currentTrack + 1, true);
+        });
+
+        audio.addEventListener('error', () => {
+            trackName.textContent = '⚠️ File missing: ' + (playlist[currentTrack]?.file || '');
+            trackName.style.color = '#f87171';
+        });
+
+        // Init UI
+        updateTrackUI();
+        updatePlayStateUI();
+        updateMuteUI();
     </script>
 </body>
 </html>
