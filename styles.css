@@ -286,3 +286,58 @@ h1 {
 #track-btn:hover {
     box-shadow: 0 0 15px rgba(255, 255, 255, 0.08);
 }
+
+/* Playing state - extra glow on audio button */
+.is-playing-glow {
+    border-color: rgba(56, 189, 248, 0.6) !important;
+    box-shadow: 0 0 60px -10px rgba(56, 189, 248, 0.55), 0 0 30px -5px rgba(56, 189, 248, 0.35), inset 0 0 15px rgba(56, 189, 248, 0.15);
+    animation: playing-ring 2.5s ease-in-out infinite;
+}
+
+@keyframes playing-ring {
+    0%, 100% {
+        box-shadow: 0 0 60px -10px rgba(56, 189, 248, 0.55), 0 0 30px -5px rgba(56, 189, 248, 0.35), inset 0 0 15px rgba(56, 189, 248, 0.15);
+    }
+    50% {
+        box-shadow: 0 0 90px -10px rgba(56, 189, 248, 0.8), 0 0 50px -5px rgba(56, 189, 248, 0.55), inset 0 0 25px rgba(56, 189, 248, 0.25);
+    }
+}
+
+/* Pulse animation for "Now Playing" icon */
+.animate-pulse-play {
+    animation: pulse-play 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse-play {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.2); }
+}
+
+/* Play/Pause + Next button hover glow inside soundbar */
+#play-pause-btn:hover i,
+#mute-btn:hover i,
+#track-btn:hover i {
+    color: #38bdf8 !important;
+    transform: scale(1.1);
+}
+
+#play-pause-btn i {
+    transition: all 0.25s ease;
+}
+
+#play-pause-btn:hover {
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.08);
+}
+
+/* Keep sound waves always visible when actively playing */
+.is-playing-glow ~ .sound-waves,
+.audio-button.is-playing-glow .sound-waves {
+    opacity: 1 !important;
+}
+
+/* Track name truncate helper */
+.truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
