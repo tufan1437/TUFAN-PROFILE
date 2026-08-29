@@ -179,34 +179,37 @@
             }
         });
 
-        // View Counter Logic
+        // View Counter Logic - UNIQUE VISITORS ONLY (1 count per user forever)
         async function updateViewCount() {
             try {
-                const namespace = 'tufan1437.github.io';
-                const name = 'profile-views';
-                const storageKey = 'visited_tufan_profile';
-                
-                // Check if this person has already been counted
-                const hasVisited = localStorage.getItem(storageKey);
-                
-                // If new visitor, use '/up' to increase. If returning, just get the current count.
-                const endpoint = hasVisited ? 
-                    `https://api.counterapi.dev/v1/${namespace}/${name}` : 
-                    `https://api.counterapi.dev/v1/${namespace}/${name}/up`;
+                const namespace = 'tufan-profile';
+                const name = 'aura-views';
+                const storageKey = 'tufan_unique_visitor_v3'; // Permanent (never cleared unless user wipes cache)
+                const BASE_VIEWS = 1377;
+
+                const alreadyCounted = localStorage.getItem(storageKey);
+
+                // Only hit/increment if this user has NEVER been counted before
+                const endpoint = alreadyCounted
+                    ? `https://api.countapi.xyz/get/${namespace}/${name}`
+                    : `https://api.countapi.xyz/hit/${namespace}/${name}`;
 
                 const response = await fetch(endpoint);
+                if (!response.ok) throw new Error('Counter API down');
                 const data = await response.json();
-                
-                if (!hasVisited) {
-                    localStorage.setItem(storageKey, 'true');
+
+                // Mark them as counted PERMANENTLY (even across sessions)
+                if (!alreadyCounted) {
+                    localStorage.setItem(storageKey, new Date().toISOString());
                 }
 
-                // Start counting from 1,337
-                const totalViews = data.count + 1337;
-                document.getElementById('view-count').innerText = totalViews.toLocaleString();
+                const realCount = (data.value || 0);
+                const displayCount = BASE_VIEWS + realCount;
+                document.getElementById('view-count').innerText = displayCount.toLocaleString();
+
             } catch (error) {
-                console.error('Error fetching view count:', error);
-                document.getElementById('view-count').innerText = '1,337+';
+                console.warn('Counter API unreachable:', error);
+                document.getElementById('view-count').innerText = '1,377+';
             }
         }
         updateViewCount();
