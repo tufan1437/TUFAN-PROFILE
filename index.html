@@ -400,6 +400,57 @@
             trackName.style.color = '#f87171';
         });
 
+        // =============== AUTO-PLAY ON PAGE LOAD ===============
+        function tryAutoplay() {
+            if (playlist.length === 0) return;
+            loadTrack(0, false);
+
+            // Strategy 1: Try normal autoplay first
+            audio.play().then(() => {
+                isPlaying = true;
+                updatePlayStateUI();
+            }).catch(() => {
+                // Strategy 2: Try autoplay MUTED (browsers allow muted autoplay)
+                audio.muted = true;
+                isMuted = true;
+                updateMuteUI();
+                audio.play().then(() => {
+                    isPlaying = true;
+                    updatePlayStateUI();
+                    // Show hint that user can unmute
+                    trackName.textContent = '🔇 Playing muted - click Mute to unmute';
+                    trackName.style.color = '#38bdf8';
+                    setTimeout(() => { trackName.style.color = ''; updateTrackUI(); }, 4000);
+                }).catch(() => {
+                    // Strategy 3: Wait for FIRST user interaction anywhere
+                    trackName.textContent = '👆 Click anywhere to start music';
+                    trackName.style.color = '#facc15';
+                    const startOnInteract = () => {
+                        audio.muted = false;
+                        isMuted = false;
+                        audio.volume = 0.5;
+                        volumeSlider.value = 50;
+                        updateVolumeUI(50);
+                        updateMuteUI();
+                        playAudio();
+                        document.removeEventListener('click', startOnInteract);
+                        document.removeEventListener('scroll', startOnInteract);
+                        document.removeEventListener('keydown', startOnInteract);
+                        document.removeEventListener('touchstart', startOnInteract);
+                    };
+                    document.addEventListener('click', startOnInteract);
+                    document.addEventListener('scroll', startOnInteract);
+                    document.addEventListener('keydown', startOnInteract);
+                    document.addEventListener('touchstart', startOnInteract);
+                });
+            });
+        }
+
+        // Kick off autoplay after a tiny delay so page loads first
+        window.addEventListener('load', () => {
+            setTimeout(tryAutoplay, 600);
+        });
+
         // Init UI
         updateTrackUI();
         updatePlayStateUI();
