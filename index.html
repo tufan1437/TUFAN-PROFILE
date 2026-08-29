@@ -179,124 +179,124 @@
             }
         });
 
-        // View Counter Logic - ADVANCED v3 (RELIABLE UNIQUE VISITORS ONLY)
-        async function updateViewCount() {
-            const BASE_VIEWS = 1377;
-            const STORAGE_KEY = 'tufan_v6_unique';     // Permanently flags unique user
-            const CACHED_TOTAL = 'tufan_v6_total';     // Cached latest total count
-            const PAGE_ID = encodeURIComponent('aura.tufanprofile.xyz');
+        /* ============================================================
+         *  PRODUCTION UNIQUE-VISITOR COUNTER
+         *  Architecture:
+         *    Frontend (index.html) → Supabase Postgres REST API
+         *    DB = source of truth. localStorage = identity + UI cache ONLY.
+         *
+         *  SETUP: Create a free Supabase project, run the SQL init
+         *  from the instructions, then paste your URL + anon key below.
+         * ============================================================ */
+        (async function viewCounter() {
+            /* ---------------- CONFIG ---------------- */
+            const SUPABASE_URL = 'https://kkhqemzmkjvsdzbkwexs.supabase.co';
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtraHFlbXprbWpkdnNkemt3ZXpzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc5ODYxNTYsImV4cCI6MjEwMzU2MjE1Nn0.OHks5MSoiExZiwXUHcl2MUHzAxDJkpBxoVPvtT-gz2Y';
+            const BASE_START = 1377;   // The intended initial total
+            const VISITOR_ID_KEY = 'tufan_visitor_uuid_v1';   // Permanent browser identity
+            const CACHED_TOTAL_KEY = 'tufan_cached_total_v1'; // UI-only cache for speed
 
-            function isAlreadyCounted() {
-                try { return localStorage.getItem(STORAGE_KEY) !== null; }
-                catch(e) { return false; }
+            /* ---------------- HELPERS ---------------- */
+            const viewEl = document.getElementById('view-count');
+
+            function show(n) {
+                viewEl.innerText = Math.max(BASE_START, Math.floor(n)).toLocaleString();
             }
-            function markCounted(fp) {
-                try { localStorage.setItem(STORAGE_KEY, JSON.stringify({t:Date.now(), fp})); } catch(e) {}
-            }
-            function fpHash(s) {
-                let h = 2166136261;
-                for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
-                return (h >>> 0).toString(36);
-            }
-            function getCachedTotal() {
-                try { return parseInt(localStorage.getItem(CACHED_TOTAL) || '0', 10); }
-                catch(e) { return 0; }
-            }
-            function setCachedTotal(n) {
-                try { localStorage.setItem(CACHED_TOTAL, String(n)); } catch(e) {}
-            }
-            async function getFingerprint() {
-                let ip = '';
+
+            function readCachedTotal() {
                 try {
-                    const r = await fetch('https://api.myip.com', { cache: 'force-cache' });
-                    if (r.ok) {
-                        const d = await r.json();
-                        ip = d.ip || '';
-                    }
-                } catch(e) {}
-                const raw = [
-                    ip,
-                    navigator.userAgent,
-                    navigator.language,
-                    navigator.platform,
-                    screen.width + 'x' + screen.height,
-                    new Date().getTimezoneOffset()
-                ].join('|');
-                return fpHash(raw);
+                    const n = parseInt(localStorage.getItem(CACHED_TOTAL_KEY) || '0', 10);
+                    return Number.isFinite(n) && n > 0 ? n : 0;
+                } catch (e) { return 0; }
             }
 
-            // ========== PRIMARY: hits.seeyoufarm.com (only call INCR for NEW unique visitors) ==========
-            async function hitsSYF_incr() {
-                const url = `https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=${PAGE_ID}&count_bg=%23000000&title_bg=%23000000&icon_color=%23FFFFFF&icon=github&title=visitors`;
-                const r = await fetch(url, { cache: 'no-store' });
-                const text = await r.text();
-                const matches = text.match(/(\d+(?:[.,]\d+)*)\s*\/\s*(\d+(?:[.,]\d+)*)/);
-                if (!matches) throw new Error('SVG parse fail');
-                const total = parseInt(matches[2].replace(/[.,]/g, ''), 10);
-                return total;
-            }
-
-            // ========== FALLBACK: countapi.xyz — has separate get vs hit endpoints ==========
-            const NS = 'tufan-v6';
-            const KEY = 'aura-unique-visitors';
-            async function countAPI_increment() {
-                const r = await fetch(`https://api.countapi.xyz/hit/${NS}/${KEY}`, { cache: 'no-store' });
-                if (!r.ok) throw new Error('countapi fail');
-                const d = await r.json();
-                return (typeof d.value === 'number') ? d.value : 0;
-            }
-            async function countAPI_getOnly() {
+            function writeCachedTotal(n) {
                 try {
-                    const r = await fetch(`https://api.countapi.xyz/get/${NS}/${KEY}`, { cache: 'no-store' });
-                    if (!r.ok) return 0;
-                    const d = await r.json();
-                    return (typeof d.value === 'number') ? d.value : 0;
-                } catch(e) { return 0; }
+                    const prev = readCachedTotal();
+                    if (n > prev) localStorage.setItem(CACHED_TOTAL_KEY, String(n));
+                } catch (e) {}
             }
 
-            // ========== MAIN ==========
-            try {
-                await getFingerprint(); // pre-warm network
-                const counted = isAlreadyCounted();
-                let totalUnique = 0;
+            function cryptoUUID() {
+                if (crypto && typeof crypto.randomUUID === 'function') return crypto.randomUUID();
+                return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                    const r = (crypto.getRandomValues(new Uint8Array(1))[0] & 0xf);
+                    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+                    return v.toString(16);
+                });
+            }
 
-                if (counted) {
-                    // ✅ RETURN VISITOR - DO NOT INCREMENT ANYTHING
-                    // Try countapi GET first (free fetch), fallback to cached total
-                    totalUnique = await countAPI_getOnly();
-                    if (totalUnique <= 0) totalUnique = getCachedTotal();
-                } else {
-                    // 🆕 NEW UNIQUE VISITOR - INCREMENT ONCE!
-                    let incrOk = false;
-                    try {
-                        totalUnique = await hitsSYF_incr(); // Primary increment
-                        incrOk = true;
-                    } catch(e) {}
-                    if (!incrOk) {
-                        try {
-                            totalUnique = await countAPI_increment(); // Fallback increment
-                            incrOk = true;
-                        } catch(e) {}
+            function getOrCreateVisitorId() {
+                try {
+                    let id = localStorage.getItem(VISITOR_ID_KEY);
+                    if (!id || id.length < 10) {
+                        id = cryptoUUID();
+                        localStorage.setItem(VISITOR_ID_KEY, id);
                     }
-                    if (!incrOk) {
-                        // Emergency: local-only counter
-                        totalUnique = getCachedTotal() + 1;
-                    }
-                    setCachedTotal(totalUnique);
-                    markCounted('v6');
+                    return id;
+                } catch (e) {
+                    return cryptoUUID();
                 }
-
-                const visitors = Math.max(1, totalUnique || 0);
-                const display = BASE_VIEWS + visitors;
-                document.getElementById('view-count').innerText = display.toLocaleString();
-
-            } catch (err) {
-                console.error('Counter degraded:', err);
-                const minShow = BASE_VIEWS + Math.max(1, getCachedTotal() || 1);
-                document.getElementById('view-count').innerText = minShow.toLocaleString();
             }
-        }
-        updateViewCount();
+
+            /* ---------------- STEP 1: INSTANT RENDER FROM CACHE ---------------- */
+            const cachedTotal = readCachedTotal();
+            show(cachedTotal > 0 ? cachedTotal : BASE_START);
+
+            /* ---------------- STEP 2: ABORT IF SUPABASE NOT SET UP ---------------- */
+            if (!SUPABASE_URL || SUPABASE_URL.includes('YOUR-PROJECT') ||
+                !SUPABASE_ANON_KEY || SUPABASE_ANON_KEY.includes('YOUR-ANON')) {
+                // Backend not configured yet. Keep showing cached/BASE value. Do NOT fake any counts.
+                console.info('[counter] Supabase not configured yet. Follow setup instructions to enable live global counter.');
+                return;
+            }
+
+            const visitorId = getOrCreateVisitorId();
+            const endpoint = `${SUPABASE_URL}/rest/v1/rpc/register_visit`;
+            const headers = {
+                'apikey': SUPABASE_ANON_KEY,
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                'Content-Type': 'application/json',
+                'Prefer': 'return=representation'
+            };
+
+            async function callBackend(retry) {
+                try {
+                    const r = await fetch(endpoint, {
+                        method: 'POST',
+                        headers,
+                        body: JSON.stringify({ vid: visitorId })
+                    });
+                    if (r.status === 429 || r.status >= 500) throw new Error('retryable ' + r.status);
+                    if (!r.ok) throw new Error('http ' + r.status);
+                    const arr = await r.json();
+                    const payload = Array.isArray(arr) ? arr[0] : arr;
+                    if (!payload || typeof payload.total !== 'number') throw new Error('bad payload');
+                    return payload.total;
+                } catch (e) {
+                    if (retry && retry > 0) {
+                        await new Promise(rs => setTimeout(rs, 600 * (3 - retry)));
+                        return callBackend(retry - 1);
+                    }
+                    throw e;
+                }
+            }
+
+            try {
+                /* ---------------- STEP 3: CALL THE SINGLE BACKEND RPC ONCE ---------------- */
+                const total = await callBackend(2); // 2 small retries = 3 attempts total
+
+                /* ---------------- STEP 4: SMOOTHLY UPDATE UI + CACHE ---------------- */
+                if (Number.isFinite(total) && total >= BASE_START) {
+                    show(total);
+                    writeCachedTotal(total);
+                }
+            } catch (err) {
+                /* ---------------- STEP 5: API FAILURE — KEEP KNOWN COUNT, NO FAKING ---------------- */
+                console.warn('[counter] backend unreachable, showing cached value only:', err.message || err);
+                show(readCachedTotal() || BASE_START);
+            }
+        })();
 
         // =============== FULL AUDIO PLAYER LOGIC ===============
         const audio = document.getElementById('bg-audio');
