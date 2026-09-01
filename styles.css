@@ -616,3 +616,84 @@ h1 {
     70%  { transform: scale(1.25); }
     100% { opacity: 1; transform: scale(1); }
 }
+
+/* ================================================
+   🎡 THEME ROTATION / SHOWCASE MODE TOAST
+   ================================================ */
+
+/* Toast slide-in entrance (bottom center) */
+.theme-rotate-toast.show {
+    opacity: 1 !important;
+    transform: translate(-50%, 0) scale(1) !important;
+    pointer-events: auto !important;
+    animation: toast-float 5s ease-in-out infinite;
+}
+.theme-rotate-toast.changing {
+    animation: toast-flash 0.6s cubic-bezier(0.4,0,0.2,1) !important;
+}
+@keyframes toast-float {
+    0%,100% { transform: translate(-50%, 0) scale(1); }
+    50%     { transform: translate(-50%, -6px) scale(1.005); }
+}
+@keyframes toast-flash {
+    0%   { filter: brightness(1);   box-shadow: var(--card-shadow-1), var(--card-shadow-2); }
+    30%  { filter: brightness(1.9); box-shadow: var(--card-hover-shadow-1), var(--card-hover-shadow-2); }
+    100% { filter: brightness(1);   box-shadow: var(--card-shadow-1), var(--card-shadow-2); }
+}
+
+/* Spin slow helper (for rotate icon) */
+.animate-spin-slow { animation: spin-slow 1.5s linear infinite; }
+@keyframes spin-slow { to { transform: rotate(360deg); } }
+
+/* Countdown number bounce on tick */
+.toast-countdown-tick {
+    animation: countdown-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes countdown-pop {
+    0%   { transform: scale(0.70); opacity: 0.3; }
+    60%  { transform: scale(1.22); opacity: 1;   }
+    100% { transform: scale(1);    opacity: 1;   }
+}
+
+/* Stop button hover shake */
+.rotate-stop-btn:hover i { animation: wiggle 0.6s ease-in-out; }
+@keyframes wiggle {
+    0%,100% { transform: rotate(0); }
+    25%     { transform: rotate(-8deg); }
+    75%     { transform: rotate(8deg); }
+}
+
+/* Resume chip entrance */
+#theme-resume-chip.show {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    transform: translate(-50%, 0) !important;
+}
+#theme-resume-chip #btn-resume-rotate:hover {
+    transform: scale(1.04);
+}
+#theme-resume-chip #btn-resume-rotate:hover .w-2 {
+    background: var(--accent) !important;
+    box-shadow: var(--text-glow-accent);
+    animation: pulse-dot 1.2s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+    0%,100% { transform: scale(1);   opacity: 0.9; }
+    50%     { transform: scale(1.6); opacity: 1;   }
+}
+
+/* Theme change flash overlay (subtle!) */
+.theme-change-flash {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+    background: radial-gradient(circle at 50% 50%, rgba(var(--accent-rgb), 0.12) 0%, transparent 60%);
+    opacity: 0;
+    animation: flash-fadeout 0.8s ease-out;
+}
+@keyframes flash-fadeout {
+    0%   { opacity: 0; }
+    20%  { opacity: 1; }
+    100% { opacity: 0; }
+}
