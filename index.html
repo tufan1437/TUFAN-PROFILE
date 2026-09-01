@@ -4,15 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AURA | @TUFAN1437</title>
-    <!-- CRITICAL PRELOAD: Apply saved theme BEFORE CSS/JS loads (prevents flash of wrong colors) -->
+    <!-- CRITICAL PRELOAD: ALWAYS FORCE DEFAULT SKY on page open! (per user request) -->
+    <!-- User's saved preference is only used if they manually pick a theme to STOP showcase mode. -->
     <script>
         (function () {
             try {
-                var saved = localStorage.getItem('tufan_theme_v1') || 'sky';
-                var valid = ['sky', 'sakura', 'midnight', 'ocean', 'matcha'];
-                if (valid.indexOf(saved) === -1) saved = 'sky';
-                document.documentElement.setAttribute('data-theme', saved);
-                window.__INITIAL_THEME = saved;
+                // ALWAYS START WITH DEFAULT SKY on fresh page open!
+                document.documentElement.setAttribute('data-theme', 'sky');
+                window.__INITIAL_THEME = 'sky';
             } catch (e) {
                 document.documentElement.setAttribute('data-theme', 'sky');
                 window.__INITIAL_THEME = 'sky';
@@ -166,6 +165,61 @@
         </div>
     </div>
 
+    <!-- Theme Rotation Toast (Bottom Center Floating Notification) -->
+    <div id="theme-rotate-toast" class="theme-rotate-toast fixed left-1/2 -translate-x-1/2 bottom-10 z-50 px-6 py-4 rounded-2xl glass-card border border-white/15 min-w-[340px] max-w-[95%] opacity-0 translate-y-[30px] scale-95 transition-all duration-700 ease-out pointer-events-none">
+        <div class="flex items-center gap-4">
+            <!-- Left: Rotating Icon -->
+            <div class="relative flex-shrink-0 w-12 h-12 rounded-xl bg-white/8 border border-white/15 flex items-center justify-center overflow-hidden">
+                <i id="rotate-icon" class="fas fa-sync-alt text-lg animate-spin-slow" style="animation-duration: 1.5s;"></i>
+                <span class="absolute bottom-0 right-0 text-[9px] font-black px-1 rounded-tl-lg rounded-br-lg bg-white/10 border-t border-l border-white/10" style="color: var(--accent); text-shadow: var(--text-glow-accent);">AUTO</span>
+            </div>
+            <!-- Middle: Countdown Timer + Message -->
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="text-[10px] font-black uppercase tracking-[0.22em]" style="color: var(--accent); text-shadow: var(--text-glow-accent);">
+                        <i class="fas fa-magic mr-1"></i> Showcase Mode
+                    </span>
+                    <span id="rotate-chip" class="rotate-status-chip inline-flex items-center gap-1 text-[9px] font-bold uppercase px-2 py-0.5 rounded-full border transition-all duration-300" style="background: rgba(var(--accent-rgb), 0.14); border-color: rgba(var(--accent-rgb), 0.38); color: var(--accent);">
+                        <span class="w-1.5 h-1.5 rounded-full animate-pulse" style="background: var(--accent); box-shadow: var(--text-glow-accent);"></span>
+                        Active
+                    </span>
+                </div>
+                <div class="flex items-baseline gap-2">
+                    <span id="toast-message" class="text-[13px] font-semibold text-white leading-tight">Theme changing in</span>
+                    <span id="toast-countdown" class="text-2xl font-black leading-none" style="color: var(--accent); text-shadow: var(--text-glow-accent);">5</span>
+                    <span class="text-[13px] font-semibold text-white/70 leading-tight">seconds...</span>
+                </div>
+                <!-- Progress Bar -->
+                <div class="mt-2 h-1.5 w-full rounded-full bg-white/8 overflow-hidden border border-white/5">
+                    <div id="toast-progress" class="h-full rounded-full transition-all duration-1000 ease-linear" style="background: linear-gradient(to right, var(--accent-2), var(--accent)); box-shadow: var(--slider-fill-shadow); width: 100%;"></div>
+                </div>
+                <!-- Next Theme Preview -->
+                <div class="mt-2.5 flex items-center gap-2">
+                    <span class="text-[10px] font-bold uppercase tracking-[0.18em] text-white/50">Next up:</span>
+                    <div class="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-white/6 border border-white/10">
+                        <span id="next-theme-swatch" class="w-3.5 h-3.5 rounded-full bg-gradient-to-br from-sky-300 via-blue-500 to-cyan-500 shadow-sm border border-white/20"></span>
+                        <span id="next-theme-name" class="text-[11px] font-bold text-white/90">Sakura Pink</span>
+                    </div>
+                </div>
+            </div>
+            <!-- Right: Stop Button (Interactive) -->
+            <button id="btn-stop-rotate" class="rotate-stop-btn group pointer-events-auto flex flex-col items-center justify-center w-12 h-12 rounded-xl bg-white/8 border border-white/15 hover:bg-white/14 hover:border-white/28 transition-all duration-300" title="Stop auto-rotation">
+                <i class="fas fa-stop text-[13px] text-white/70 group-hover:text-white transition-colors mb-0.5"></i>
+                <span class="text-[8px] font-black uppercase tracking-wider text-white/50 group-hover:text-white transition-colors">Stop</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Stopped / Resumable small chip (bottom center, appears when user stops rotation) -->
+    <div id="theme-resume-chip" class="fixed left-1/2 -translate-x-1/2 bottom-6 z-50 opacity-0 pointer-events-none translate-y-4 transition-all duration-500">
+        <button id="btn-resume-rotate" class="pointer-events-auto flex items-center gap-2 px-4 py-2 rounded-full glass-card border border-white/12 hover:border-white/25 transition-all duration-300" title="Resume theme rotation">
+            <span class="w-2 h-2 rounded-full bg-white/40"></span>
+            <span class="text-[10px] font-bold uppercase tracking-[0.18em] text-white/80">Showcase paused</span>
+            <i class="fas fa-play text-[10px] text-white/70 ml-1"></i>
+            <span class="text-[10px] font-bold text-white/90 underline underline-offset-2 decoration-white/30">Click to resume</span>
+        </button>
+    </div>
+
     <main class="relative min-h-screen flex items-center justify-center p-4">
         <!-- Profile Container -->
         <div class="profile-container w-full max-w-[450px] relative z-10 animate-fade-in">
@@ -287,31 +341,43 @@
         // (head preload script already set data-theme before this runs!)
         particlesJS("particles-js", buildParticlesConfig(getCurrentParticleColor()));
 
-        // =============== THEME SWITCHER LOGIC ===============
+        // =============== THEME SWITCHER + AUTO-SHOWCASE ROTATION ===============
         (function themeSwitcher() {
             const VALID_THEMES = ['sky', 'sakura', 'midnight', 'ocean', 'matcha'];
+            // Metadata for nice display + next-theme preview swatches
+            const THEME_META = {
+                sky:      { name: 'Default Sky',  gradient: 'from-sky-300 via-blue-500 to-cyan-500' },
+                sakura:   { name: 'Sakura Pink',  gradient: 'from-pink-300 via-rose-400 to-red-500' },
+                midnight: { name: 'Midnight Dark',gradient: 'from-indigo-500 via-purple-600 to-fuchsia-700' },
+                ocean:    { name: 'Ocean Neon',   gradient: 'from-cyan-300 via-teal-500 to-blue-600' },
+                matcha:   { name: 'Matcha Sage',  gradient: 'from-lime-400 via-emerald-500 to-teal-600' }
+            };
             const STORAGE_KEY = 'tufan_theme_v1';
             const html = document.documentElement;
+            const ROTATE_EVERY = 6;     // seconds before auto-changing theme (total = 5 countdowns + 1s wait = 6)
+            const DISPLAY_COUNTDOWN = 5;// shown number of seconds in message
 
-            // Returns currently applied theme (from html[data-theme])
+            /* ---------- Showcase state ---------- */
+            let isShowcaseActive = true; // rotation ON by default
+            let currentIndex = 0;        // starts at 0 = Default Sky (per user request)
+            let secondsLeft = DISPLAY_COUNTDOWN;
+            let countdownInterval = null;
+            let rotationTimeout = null;
+            let toastShown = false;
+
+            // ---------- Standard helpers ----------
             function currentTheme() {
                 const t = html.getAttribute('data-theme') || 'sky';
                 return VALID_THEMES.indexOf(t) === -1 ? 'sky' : t;
             }
-
-            // Updates active-check state in the theme menu UI
             function updateMenuUI(theme) {
                 try {
-                    const all = document.querySelectorAll('.theme-option');
-                    const allChecks = document.querySelectorAll('.theme-check');
-                    all.forEach(el => {
-                        const isMatch = el.getAttribute('data-theme') === theme;
-                        el.classList.toggle('active', isMatch);
+                    document.querySelectorAll('.theme-option').forEach(el => {
+                        const match = el.getAttribute('data-theme') === theme;
+                        el.classList.toggle('active', match);
                     });
                 } catch (e) {}
             }
-
-            // Rebuilds particles with the new theme's color
             function updateParticlesForTheme() {
                 try {
                     const pContainer = document.getElementById('particles-js');
@@ -321,39 +387,186 @@
                     }
                     if (pContainer) pContainer.innerHTML = '';
                     particlesJS('particles-js', buildParticlesConfig(getCurrentParticleColor()));
-                } catch (e) {
-                    // Fallback - particles not ready, ignore
-                }
+                } catch (e) {}
             }
-
-            // Applies a theme: data-attr -> localStorage -> UI particles
-            function applyTheme(theme, persist) {
+            /* applyTheme - also calls showThemeChangeFlash() */
+            function applyTheme(theme, persist, causedByRotation) {
                 if (VALID_THEMES.indexOf(theme) === -1) theme = 'sky';
                 html.setAttribute('data-theme', theme);
                 if (persist !== false) {
                     try { localStorage.setItem(STORAGE_KEY, theme); } catch (e) {}
                 }
+                currentIndex = Math.max(0, VALID_THEMES.indexOf(theme));
                 updateMenuUI(theme);
-                // Update particles after a tiny delay so CSS variables are recomputed for new theme
                 setTimeout(updateParticlesForTheme, 50);
+                if (causedByRotation) showThemeChangeFlash();
             }
 
-            // Hook up click handlers for each theme option
-            document.addEventListener('DOMContentLoaded', function () {
-                // Apply initial (head script set it, but ensure menu UI state is synced)
-                updateMenuUI(currentTheme());
+            // ---------- Showcase toast UI controls ----------
+            function getToastEls() {
+                return {
+                    toast:     document.getElementById('theme-rotate-toast'),
+                    countdown: document.getElementById('toast-countdown'),
+                    progress:  document.getElementById('toast-progress'),
+                    nextName:  document.getElementById('next-theme-name'),
+                    nextSwatch:document.getElementById('next-theme-swatch'),
+                    chip:      document.getElementById('rotate-chip'),
+                    stopBtn:   document.getElementById('btn-stop-rotate'),
+                    resumeChip:document.getElementById('theme-resume-chip'),
+                    resumeBtn: document.getElementById('btn-resume-rotate'),
+                    msg:       document.getElementById('toast-message'),
+                    rotateIcon:document.getElementById('rotate-icon')
+                };
+            }
+            function nextThemeKey() {
+                return VALID_THEMES[(currentIndex + 1) % VALID_THEMES.length];
+            }
+            function updateNextPreview() {
+                const ui = getToastEls();
+                if (!ui.nextName) return;
+                const next = nextThemeKey();
+                const meta = THEME_META[next];
+                ui.nextName.textContent = meta.name;
+                // Clear any old gradient classes - replace with new one
+                ui.nextSwatch.className = ui.nextSwatch.className
+                    .replace(/(from|via|to)-\S+/g, '').replace(/\s+/g,' ').trim();
+                ui.nextSwatch.classList.add('bg-gradient-to-br');
+                meta.gradient.split(' ').forEach(cls => ui.nextSwatch.classList.add(cls));
+            }
+            function showToast() {
+                const ui = getToastEls();
+                if (!ui.toast || toastShown) return;
+                toastShown = true;
+                ui.toast.classList.add('show');
+            }
+            function hideToast() {
+                const ui = getToastEls();
+                if (!ui.toast) return;
+                toastShown = false;
+                ui.toast.classList.remove('show');
+            }
+            function setCountdownNumber(num, animatePop) {
+                const ui = getToastEls();
+                if (!ui.countdown) return;
+                ui.countdown.textContent = String(num);
+                if (animatePop) {
+                    ui.countdown.classList.remove('toast-countdown-tick');
+                    // force reflow for animation restart
+                    void ui.countdown.offsetWidth;
+                    ui.countdown.classList.add('toast-countdown-tick');
+                }
+                const pct = Math.max(0, Math.min(100, (num / DISPLAY_COUNTDOWN) * 100));
+                if (ui.progress) ui.progress.style.width = pct + '%';
+            }
+            function setChipStatus(active) {
+                const ui = getToastEls();
+                if (!ui.chip) return;
+                if (active) {
+                    ui.chip.innerHTML = `<span class="w-1.5 h-1.5 rounded-full animate-pulse" style="background: var(--accent); box-shadow: var(--text-glow-accent);"></span> Active`;
+                } else {
+                    ui.chip.innerHTML = `<span class="w-1.5 h-1.5 rounded-full" style="background: #a3a3a3;"></span> Paused`;
+                }
+            }
+            function showResumeChip(show) {
+                const ui = getToastEls();
+                if (!ui.resumeChip) return;
+                if (show) ui.resumeChip.classList.add('show');
+                else      ui.resumeChip.classList.remove('show');
+            }
+            function showThemeChangeFlash() {
+                const el = document.createElement('div');
+                el.className = 'theme-change-flash';
+                document.body.appendChild(el);
+                // Also toast-flash briefly
+                const ui = getToastEls();
+                if (ui.toast) {
+                    ui.toast.classList.remove('changing');
+                    void ui.toast.offsetWidth;
+                    ui.toast.classList.add('changing');
+                }
+                setTimeout(() => { try { document.body.removeChild(el); } catch(e){} }, 900);
+            }
 
-                const options = document.querySelectorAll('.theme-option');
-                options.forEach(btn => {
-                    btn.addEventListener('click', function (e) {
+            // ---------- Showcase: Countdown + Rotation Loop ----------
+            function tickCountdown() {
+                if (!isShowcaseActive) return;
+                secondsLeft -= 1;
+                if (secondsLeft < 0) {
+                    rotateNextTheme();
+                    return;
+                }
+                setCountdownNumber(secondsLeft, true);
+            }
+            function rotateNextTheme() {
+                const next = nextThemeKey();
+                applyTheme(next, false, true);
+                updateNextPreview();
+                // Reset countdown
+                secondsLeft = DISPLAY_COUNTDOWN;
+                setCountdownNumber(secondsLeft, true);
+            }
+            function startShowcase() {
+                stopShowcaseTimers(false);
+                isShowcaseActive = true;
+                showToast();
+                setChipStatus(true);
+                showResumeChip(false);
+                updateNextPreview();
+                // Initialize: on page open we start at theme #0 (Default Sky), first change will be to #1 (Sakura) after 5s
+                secondsLeft = DISPLAY_COUNTDOWN;
+                setCountdownNumber(secondsLeft, false);
+                countdownInterval = setInterval(tickCountdown, 1000);
+            }
+            function stopShowcaseTimers(hideToastFlag) {
+                if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+                if (rotationTimeout)  { clearTimeout(rotationTimeout);  rotationTimeout  = null; }
+                if (hideToastFlag) hideToast();
+            }
+            function pauseShowcase(userInitiated) {
+                if (!isShowcaseActive && !userInitiated) return;
+                stopShowcaseTimers(true);
+                isShowcaseActive = false;
+                setChipStatus(false);
+                if (userInitiated) {
+                    // Show the small "Showcase paused - click to resume" chip
+                    showResumeChip(true);
+                }
+            }
+
+            // ---------- On DOM Ready: wire handlers + start showcase ----------
+            document.addEventListener('DOMContentLoaded', function () {
+                // 1) Initial sync
+                updateMenuUI(currentTheme());
+                updateNextPreview();
+
+                // 2) Theme option clicks: user manually picks -> PAUSE showcase, keep choice
+                document.querySelectorAll('.theme-option').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
                         e.preventDefault();
                         const theme = btn.getAttribute('data-theme');
-                        applyTheme(theme, true);
+                        pauseShowcase(true); // showcase STOPS when user picks manually
+                        applyTheme(theme, true, false);
                     });
                 });
+
+                // 3) Stop button on the toast
+                const ui = getToastEls();
+                if (ui.stopBtn) {
+                    ui.stopBtn.addEventListener('click', () => pauseShowcase(true));
+                }
+                // 4) Resume chip
+                if (ui.resumeBtn) {
+                    ui.resumeBtn.addEventListener('click', () => {
+                        applyTheme('sky', false, false); // user clicks resume: reset to Default Sky (per user rule)
+                        currentIndex = 0;
+                        startShowcase();
+                    });
+                }
+
+                // 5) Start rotation after short 1.4s delay so page fade-in completes first
+                setTimeout(startShowcase, 1400);
             });
 
-            // Expose for debugging only: window.applyTheme()
             window.applyTheme = applyTheme;
         })();
 
