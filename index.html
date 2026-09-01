@@ -192,9 +192,15 @@
             /* ---------------- CONFIG ---------------- */
             const SUPABASE_URL = 'https://kkhqemzmkjvsdzbkwexs.supabase.co';
             const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtraHFlbXprbWpkdnNkemt3ZXpzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc5ODYxNTYsImV4cCI6MjEwMzU2MjE1Nn0.OHks5MSoiExZiwXUHcl2MUHzAxDJkpBxoVPvtT-gz2Y';
-            const BASE_START = 1377;   // The intended initial total
-            const VISITOR_ID_KEY = 'tufan_visitor_uuid_v1';   // Permanent browser identity
-            const CACHED_TOTAL_KEY = 'tufan_cached_total_v1'; // UI-only cache for speed
+            const BASE_START = 1377;
+            const VISITOR_ID_KEY = 'tufan_visitor_uuid_v2';
+            const CACHED_TOTAL_KEY = 'tufan_cached_total_v2';
+
+            // Clean up old/stale keys from previous counter versions (prevents conflicts)
+            try {
+                ['tufan_unique_visitor_v3','tufan_v6_unique','tufan_visitor_uuid_v1','tufan_cached_total_v1','tufan_v6_last_count','counterapi_count_v1','seeyoufarm_count_v1']
+                    .forEach(k => localStorage.removeItem(k));
+            } catch(e) {}
 
             /* ---------------- HELPERS ---------------- */
             const viewEl = document.getElementById('view-count');
@@ -211,10 +217,7 @@
             }
 
             function writeCachedTotal(n) {
-                try {
-                    const prev = readCachedTotal();
-                    if (n > prev) localStorage.setItem(CACHED_TOTAL_KEY, String(n));
-                } catch (e) {}
+                try { localStorage.setItem(CACHED_TOTAL_KEY, String(n)); } catch (e) {}
             }
 
             function cryptoUUID() {
@@ -232,22 +235,28 @@
                     if (!id || id.length < 10) {
                         id = cryptoUUID();
                         localStorage.setItem(VISITOR_ID_KEY, id);
+                        console.log('[counter] ✨ NEW visitor created ->', id);
+                    } else {
+                        console.log('[counter] 🔁 Returning visitor ->', id);
                     }
                     return id;
                 } catch (e) {
-                    return cryptoUUID();
+                    const id = cryptoUUID();
+                    console.log('[counter] ⚠️ localStorage unavailable, using ephemeral id ->', id);
+                    return id;
                 }
             }
 
             /* ---------------- STEP 1: INSTANT RENDER FROM CACHE ---------------- */
             const cachedTotal = readCachedTotal();
-            show(cachedTotal > 0 ? cachedTotal : BASE_START);
+            const initialShow = cachedTotal > 0 ? cachedTotal : BASE_START;
+            console.log('[counter] ⚡ Instant paint from cache ->', initialShow);
+            show(initialShow);
 
             /* ---------------- STEP 2: ABORT IF SUPABASE NOT SET UP ---------------- */
             if (!SUPABASE_URL || SUPABASE_URL.includes('YOUR-PROJECT') ||
                 !SUPABASE_ANON_KEY || SUPABASE_ANON_KEY.includes('YOUR-ANON')) {
-                // Backend not configured yet. Keep showing cached/BASE value. Do NOT fake any counts.
-                console.info('[counter] Supabase not configured yet. Follow setup instructions to enable live global counter.');
+                console.info('[counter] Supabase not configured. Keeping cached/base value only.');
                 return;
             }
 
@@ -257,22 +266,29 @@
                 'apikey': SUPABASE_ANON_KEY,
                 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
                 'Content-Type': 'application/json',
-                'Prefer': 'return=representation'
+                'Cache-Control': 'no-store, no-cache, must-revalidate',
+                'Accept': 'application/json'
             };
 
             async function callBackend(retry) {
                 try {
+                    console.log('[counter] 📤 POST ->', endpoint, 'with vid =', visitorId);
                     const r = await fetch(endpoint, {
                         method: 'POST',
                         headers,
-                        body: JSON.stringify({ vid: visitorId })
+                        body: JSON.stringify({ vid: visitorId }),
+                        cache: 'no-store'
                     });
-                    if (r.status === 429 || r.status >= 500) throw new Error('retryable ' + r.status);
-                    if (!r.ok) throw new Error('http ' + r.status);
-                    const arr = await r.json();
-                    const payload = Array.isArray(arr) ? arr[0] : arr;
-                    if (!payload || typeof payload.total !== 'number') throw new Error('bad payload');
-                    return payload.total;
+                    const rawText = await r.text();
+                    console.log('[counter] 📥 HTTP', r.status, 'raw body:', rawText);
+                    if (r.status === 429 || r.status >= 500) throw new Error('retryable ' + r.status + ' body: ' + rawText.slice(0, 200));
+                    if (!r.ok) throw new Error('http ' + r.status + ' ' + rawText.slice(0, 300));
+                    let payload;
+                    try { payload = JSON.parse(rawText); } catch(e) { throw new Error('bad json: ' + rawText.slice(0, 200)); }
+                    payload = Array.isArray(payload) ? payload[0] : payload;
+                    if (!payload || typeof payload.total !== 'number') throw new Error('bad payload structure: ' + rawText);
+                    console.log('[counter] 🏁 Backend result -> counted:', payload.counted, '| TOTAL UNIQUE:', payload.total);
+                    return payload;
                 } catch (e) {
                     if (retry && retry > 0) {
                         await new Promise(rs => setTimeout(rs, 600 * (3 - retry)));
@@ -284,16 +300,16 @@
 
             try {
                 /* ---------------- STEP 3: CALL THE SINGLE BACKEND RPC ONCE ---------------- */
-                const total = await callBackend(2); // 2 small retries = 3 attempts total
+                const result = await callBackend(2);
 
                 /* ---------------- STEP 4: SMOOTHLY UPDATE UI + CACHE ---------------- */
-                if (Number.isFinite(total) && total >= BASE_START) {
-                    show(total);
-                    writeCachedTotal(total);
+                if (Number.isFinite(result.total) && result.total >= BASE_START) {
+                    show(result.total);
+                    writeCachedTotal(result.total);
                 }
             } catch (err) {
                 /* ---------------- STEP 5: API FAILURE — KEEP KNOWN COUNT, NO FAKING ---------------- */
-                console.warn('[counter] backend unreachable, showing cached value only:', err.message || err);
+                console.error('[counter] ❌ Backend unreachable - showing cached value only. Error:', err.message || err);
                 show(readCachedTotal() || BASE_START);
             }
         })();
