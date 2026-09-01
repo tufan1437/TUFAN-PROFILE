@@ -1,5 +1,188 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
+/* ================================================
+   🌌 THEME SYSTEM — 5 COMPLETE PALETTES
+   ================================================ */
+
+/* ----- Root Variables (applied to html[data-theme]) ----- */
+html {
+    /* Base variables - Default Sky theme */
+    --accent: #38bdf8;
+    --accent-rgb: 56, 189, 248;
+    --accent-2: #2563eb;
+    --card-bg: rgba(255, 255, 255, 0.10);
+    --card-border: rgba(255, 255, 255, 0.18);
+    --card-shadow-1: 0 0 100px -20px rgba(255, 255, 255, 0.2);
+    --card-shadow-2: 0 0 40px -10px rgba(59, 130, 246, 0.35);
+    --card-hover-shadow-1: 0 0 150px -20px rgba(255, 255, 255, 0.32);
+    --card-hover-shadow-2: 0 0 60px -10px rgba(59, 130, 246, 0.55);
+    --body-bg: #87CEEB;
+    --particles: #ffffff;
+    --bg-brightness: 0.8;
+    --bg-hue: 0deg;
+    --bg-saturate: 1;
+    --typewriter-caret: #3b82f6;
+    --selection-bg: rgba(59, 130, 246, 0.3);
+    --audio-btn-shadow-1: 0 0 40px -10px rgba(255, 255, 255, 0.15);
+    --audio-btn-shadow-2: 0 0 20px -5px rgba(var(--accent-rgb), 0.25);
+    --audio-btn-hover-shadow-1: 0 0 60px -10px rgba(255, 255, 255, 0.28);
+    --audio-btn-hover-shadow-2: 0 0 30px -5px rgba(var(--accent-rgb), 0.45);
+    --soundbar-radial: radial-gradient(circle at 20% 0%, rgba(var(--accent-rgb), 0.10) 0%, transparent 50%);
+    --slider-thumb-border: #38bdf8;
+    --slider-thumb-shadow: 0 0 15px rgba(var(--accent-rgb), 0.6), 0 0 3px rgba(255,255,255,0.8);
+    --slider-fill-shadow: 0 0 10px rgba(var(--accent-rgb), 0.4);
+    --verified-bg: #3b82f6;
+    --verified-shadow: 0 0 10px rgba(59, 130, 246, 0.5), 0 0 15px rgba(59, 130, 246, 0.4);
+    --text-glow-accent: 0 0 10px rgba(var(--accent-rgb), 0.55);
+    --social-hover-shadow: 0 0 20px rgba(var(--accent-rgb), 0.10);
+    --social-hover-border: rgba(255, 255, 255, 0.30);
+    --transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    --playing-glow: 0 0 60px -10px rgba(var(--accent-rgb), 0.58), 0 0 30px -5px rgba(var(--accent-rgb), 0.38), inset 0 0 15px rgba(var(--accent-rgb), 0.18);
+    --playing-glow-strong: 0 0 90px -10px rgba(var(--accent-rgb), 0.85), 0 0 50px -5px rgba(var(--accent-rgb), 0.60), inset 0 0 25px rgba(var(--accent-rgb), 0.30);
+    --gradient-from: from-sky-500;
+    --gradient-to: to-sky-300;
+}
+
+/* Enable smooth transition for ALL themed properties */
+html, html *, html *::before, html *::after {
+    transition: background-color 0.6s cubic-bezier(0.4,0,0.2,1),
+                border-color 0.6s cubic-bezier(0.4,0,0.2,1),
+                color 0.5s cubic-bezier(0.4,0,0.2,1),
+                box-shadow 0.6s cubic-bezier(0.4,0,0.2,1),
+                filter 0.6s cubic-bezier(0.4,0,0.2,1),
+                text-shadow 0.5s cubic-bezier(0.4,0,0.2,1),
+                backdrop-filter 0.6s ease;
+}
+
+/* ================================================
+   🌤️ THEME 1 — DEFAULT SKY (blues / clouds)
+   ================================================ */
+html[data-theme="sky"] {
+    --accent: #38bdf8;
+    --accent-rgb: 56, 189, 248;
+    --accent-2: #2563eb;
+    --card-bg: rgba(255, 255, 255, 0.10);
+    --card-border: rgba(255, 255, 255, 0.18);
+    --card-shadow-1: 0 0 100px -20px rgba(255, 255, 255, 0.2);
+    --card-shadow-2: 0 0 40px -10px rgba(59, 130, 246, 0.35);
+    --card-hover-shadow-1: 0 0 150px -20px rgba(255, 255, 255, 0.32);
+    --card-hover-shadow-2: 0 0 60px -10px rgba(59, 130, 246, 0.55);
+    --body-bg: #87CEEB;
+    --particles: #ffffff;
+    --bg-brightness: 0.82;
+    --bg-hue: 0deg;
+    --bg-saturate: 1;
+    --typewriter-caret: #3b82f6;
+    --selection-bg: rgba(59, 130, 246, 0.3);
+    --verified-bg: #3b82f6;
+    --verified-shadow: 0 0 10px rgba(59, 130, 246, 0.5), 0 0 15px rgba(59, 130, 246, 0.4);
+    --text-glow-accent: 0 0 10px rgba(var(--accent-rgb), 0.55);
+}
+
+/* ================================================
+   🌸 THEME 2 — SAKURA PINK (cherry blossoms)
+   ================================================ */
+html[data-theme="sakura"] {
+    --accent: #f472b6;
+    --accent-rgb: 244, 114, 182;
+    --accent-2: #ec4899;
+    --card-bg: rgba(255, 240, 245, 0.10);
+    --card-border: rgba(255, 200, 225, 0.20);
+    --card-shadow-1: 0 0 100px -20px rgba(255, 200, 225, 0.25);
+    --card-shadow-2: 0 0 40px -10px rgba(236, 72, 153, 0.40);
+    --card-hover-shadow-1: 0 0 150px -20px rgba(255, 220, 235, 0.38);
+    --card-hover-shadow-2: 0 0 60px -10px rgba(236, 72, 153, 0.60);
+    --body-bg: #ffc0cb;
+    --particles: #ffe4ec;
+    --bg-brightness: 0.88;
+    --bg-hue: -10deg;
+    --bg-saturate: 1.15;
+    --typewriter-caret: #ec4899;
+    --selection-bg: rgba(236, 72, 153, 0.30);
+    --verified-bg: #ec4899;
+    --verified-shadow: 0 0 10px rgba(236, 72, 153, 0.55), 0 0 15px rgba(244, 114, 182, 0.45);
+    --text-glow-accent: 0 0 10px rgba(var(--accent-rgb), 0.60);
+}
+
+/* ================================================
+   🌙 THEME 3 — MIDNIGHT DARK (cyberpunk purple)
+   ================================================ */
+html[data-theme="midnight"] {
+    --accent: #a855f7;
+    --accent-rgb: 168, 85, 247;
+    --accent-2: #7c3aed;
+    --card-bg: rgba(30, 10, 60, 0.35);
+    --card-border: rgba(168, 85, 247, 0.28);
+    --card-shadow-1: 0 0 100px -20px rgba(120, 60, 220, 0.35);
+    --card-shadow-2: 0 0 40px -10px rgba(168, 85, 247, 0.45);
+    --card-hover-shadow-1: 0 0 150px -20px rgba(160, 80, 230, 0.50);
+    --card-hover-shadow-2: 0 0 60px -10px rgba(168, 85, 247, 0.70);
+    --body-bg: #0f0425;
+    --particles: #c4b5fd;
+    --bg-brightness: 0.42;
+    --bg-hue: 270deg;
+    --bg-saturate: 1.3;
+    --typewriter-caret: #a855f7;
+    --selection-bg: rgba(168, 85, 247, 0.32);
+    --verified-bg: #7c3aed;
+    --verified-shadow: 0 0 10px rgba(168, 85, 247, 0.60), 0 0 15px rgba(124, 58, 237, 0.50);
+    --text-glow-accent: 0 0 10px rgba(var(--accent-rgb), 0.65);
+}
+
+/* ================================================
+   🌊 THEME 4 — OCEAN NEON (retro wave)
+   ================================================ */
+html[data-theme="ocean"] {
+    --accent: #22d3ee;
+    --accent-rgb: 34, 211, 238;
+    --accent-2: #0891b2;
+    --card-bg: rgba(5, 25, 55, 0.30);
+    --card-border: rgba(34, 211, 238, 0.25);
+    --card-shadow-1: 0 0 100px -20px rgba(30, 180, 220, 0.35);
+    --card-shadow-2: 0 0 40px -10px rgba(34, 211, 238, 0.45);
+    --card-hover-shadow-1: 0 0 150px -20px rgba(34, 211, 238, 0.50);
+    --card-hover-shadow-2: 0 0 60px -10px rgba(34, 211, 238, 0.72);
+    --body-bg: #001e36;
+    --particles: #67e8f9;
+    --bg-brightness: 0.55;
+    --bg-hue: 180deg;
+    --bg-saturate: 1.35;
+    --typewriter-caret: #22d3ee;
+    --selection-bg: rgba(34, 211, 238, 0.30);
+    --verified-bg: #0891b2;
+    --verified-shadow: 0 0 10px rgba(34, 211, 238, 0.60), 0 0 15px rgba(8, 145, 178, 0.50);
+    --text-glow-accent: 0 0 10px rgba(var(--accent-rgb), 0.65);
+}
+
+/* ================================================
+   🍵 THEME 5 — MATCHA SAGE (zen garden green)
+   ================================================ */
+html[data-theme="matcha"] {
+    --accent: #4ade80;
+    --accent-rgb: 74, 222, 128;
+    --accent-2: #16a34a;
+    --card-bg: rgba(230, 255, 240, 0.08);
+    --card-border: rgba(74, 222, 128, 0.20);
+    --card-shadow-1: 0 0 100px -20px rgba(200, 255, 220, 0.22);
+    --card-shadow-2: 0 0 40px -10px rgba(22, 163, 74, 0.38);
+    --card-hover-shadow-1: 0 0 150px -20px rgba(210, 255, 230, 0.35);
+    --card-hover-shadow-2: 0 0 60px -10px rgba(22, 163, 74, 0.58);
+    --body-bg: #c8e6c0;
+    --particles: #dcfce7;
+    --bg-brightness: 0.88;
+    --bg-hue: 70deg;
+    --bg-saturate: 1.05;
+    --typewriter-caret: #16a34a;
+    --selection-bg: rgba(22, 163, 74, 0.30);
+    --verified-bg: #16a34a;
+    --verified-shadow: 0 0 10px rgba(74, 222, 128, 0.55), 0 0 15px rgba(22, 163, 74, 0.45);
+    --text-glow-accent: 0 0 10px rgba(var(--accent-rgb), 0.58);
+}
+
+/* ================================================
+   🏡 BASE RESETS
+   ================================================ */
+
 * {
     cursor: default;
     user-select: none;
@@ -15,12 +198,13 @@ a, a *, button, .cursor-pointer {
 
 body {
     font-family: 'Inter', sans-serif;
-    background-color: #87CEEB; /* Match the sky blue background */
+    background-color: var(--body-bg);
     overflow: hidden;
     margin: 0;
     padding: 0;
 }
 
+/* Animated background image - uses theme brightness/hue/saturate! */
 .background-wrapper {
     position: fixed;
     top: 0;
@@ -41,18 +225,15 @@ body {
     top: -5%;
     left: -5%;
     animation: live-background 30s ease-in-out infinite alternate;
-    filter: brightness(0.8);
+    filter: brightness(var(--bg-brightness)) hue-rotate(var(--bg-hue)) saturate(var(--bg-saturate));
 }
 
 @keyframes live-background {
-    from {
-        transform: scale(1) translate(0, 0);
-    }
-    to {
-        transform: scale(1.1) translate(-2%, -2%);
-    }
+    from { transform: scale(1) translate(0, 0); }
+    to   { transform: scale(1.1) translate(-2%, -2%); }
 }
 
+/* Particles.js - uses theme particle color */
 #particles-js {
     position: fixed;
     top: 0;
@@ -62,12 +243,17 @@ body {
     z-index: 1;
 }
 
+/* ================================================
+   🪟 GLASS CARD (main profile card) - THEMED!
+   ================================================ */
+
 .glass-card {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(25px) saturate(150%);
-    box-shadow: 0 0 100px -20px rgba(255, 255, 255, 0.2), 0 0 40px -10px rgba(59, 130, 246, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    background: var(--card-bg);
+    backdrop-filter: blur(25px) saturate(160%);
+    -webkit-backdrop-filter: blur(25px) saturate(160%);
+    box-shadow: var(--card-shadow-1), var(--card-shadow-2);
+    border: 1px solid var(--card-border);
+    transition: var(--transition);
 }
 
 .glass-card::before {
@@ -77,25 +263,28 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
+    background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.04) 0%, transparent 100%);
     pointer-events: none;
+    border-radius: inherit;
 }
 
 .glass-card:hover {
-    border-color: rgba(255, 255, 255, 0.3);
-    box-shadow: 0 0 150px -20px rgba(255, 255, 255, 0.3), 0 0 60px -10px rgba(59, 130, 246, 0.5);
+    border-color: var(--social-hover-border);
+    box-shadow: var(--card-hover-shadow-1), var(--card-hover-shadow-2);
 }
 
+/* Social buttons */
 .social-button {
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .social-button:hover {
     transform: scale(1.02) translateX(4px);
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: var(--social-hover-shadow);
+    border-color: var(--social-hover-border);
 }
 
+/* About me tag - floating */
 .about-me-tag {
     animation: floating 3s ease-in-out infinite;
     backdrop-filter: blur(5px);
@@ -107,11 +296,12 @@ body {
     100% { transform: translateY(0px); }
 }
 
+/* Typewriter text + caret */
 .typewriter {
     display: inline-block;
     overflow: hidden;
     white-space: nowrap;
-    border-right: 2px solid #3b82f6;
+    border-right: 2px solid var(--typewriter-caret);
     animation: typing 2.5s steps(30, end), blink-caret 0.75s step-end infinite;
 }
 
@@ -122,20 +312,30 @@ body {
 
 @keyframes blink-caret {
     from, to { border-color: transparent }
-    50% { border-color: #3b82f6; }
+    50% { border-color: var(--typewriter-caret); }
 }
 
+/* Verified badge */
 .verified-badge {
-    text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
-    box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+    background-color: var(--verified-bg) !important;
+    box-shadow: var(--verified-shadow);
 }
 
 h1 {
     text-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
 }
 
-.text-sky-400 {
-    text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+/* Accent text shadow - override Tailwind's default text-sky-400 to match theme! */
+.text-sky-400,
+.theme-label-accent {
+    color: var(--accent) !important;
+    text-shadow: var(--text-glow-accent);
+}
+
+/* About me tag accent label */
+.about-me-tag span {
+    color: var(--accent) !important;
+    text-shadow: var(--text-glow-accent);
 }
 
 .animate-fade-in {
@@ -148,32 +348,44 @@ h1 {
 }
 
 ::selection {
-    background-color: rgba(59, 130, 246, 0.3);
+    background-color: var(--selection-bg);
 }
 
-/* =============== AUDIO CONTROL STYLES =============== */
+/* ================================================
+   🎵 AUDIO CONTROL (left top button) - THEMED
+   ================================================ */
 
 .audio-button {
     background: rgba(255, 255, 255, 0.08) !important;
-    backdrop-filter: blur(20px) saturate(150%);
-    -webkit-backdrop-filter: blur(20px) saturate(150%);
-    box-shadow: 0 0 40px -10px rgba(255, 255, 255, 0.15), 0 0 20px -5px rgba(56, 189, 248, 0.2);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    box-shadow: var(--audio-btn-shadow-1), var(--audio-btn-shadow-2);
 }
 
 .audio-button:hover {
     transform: scale(1.08);
     background: rgba(255, 255, 255, 0.14) !important;
-    box-shadow: 0 0 60px -10px rgba(255, 255, 255, 0.25), 0 0 30px -5px rgba(56, 189, 248, 0.4);
+    box-shadow: var(--audio-btn-hover-shadow-1), var(--audio-btn-hover-shadow-2);
     border-color: rgba(255, 255, 255, 0.25) !important;
 }
 
-/* Sound Wave Animation on Button */
+/* Audio icon color override to match theme */
+#audio-main-icon {
+    color: var(--accent) !important;
+    transition: color 0.3s ease;
+}
+.audio-control:hover #audio-main-icon {
+    color: #ffffff !important;
+}
+
+/* Sound wave bars (5 of them!) - theme accent color */
 .sound-waves .wave {
     width: 2.5px;
     height: 10px;
+    background: var(--accent) !important;
+    opacity: 0.85;
     animation: wave-bounce 0.9s ease-in-out infinite;
 }
-
 .sound-waves .wave-1 { animation-delay: 0s; }
 .sound-waves .wave-2 { animation-delay: 0.1s; }
 .sound-waves .wave-3 { animation-delay: 0.2s; }
@@ -182,15 +394,15 @@ h1 {
 
 @keyframes wave-bounce {
     0%, 100% { height: 8px; opacity: 0.5; }
-    50% { height: 22px; opacity: 1; }
+    50%     { height: 22px; opacity: 1; }
 }
 
 /* Sound Bar Panel */
 .sound-bar {
     background: rgba(255, 255, 255, 0.08) !important;
-    backdrop-filter: blur(30px) saturate(160%);
-    -webkit-backdrop-filter: blur(30px) saturate(160%);
-    box-shadow: 0 0 80px -20px rgba(255, 255, 255, 0.2), 0 0 40px -10px rgba(56, 189, 248, 0.3);
+    backdrop-filter: blur(30px) saturate(170%);
+    -webkit-backdrop-filter: blur(30px) saturate(170%);
+    box-shadow: var(--card-hover-shadow-1), var(--card-shadow-2);
 }
 
 .sound-bar::before {
@@ -200,12 +412,24 @@ h1 {
     left: 0;
     width: 100%;
     height: 100%;
-    background: radial-gradient(circle at 20% 0%, rgba(56, 189, 248, 0.08) 0%, transparent 50%);
+    background: var(--soundbar-radial);
     pointer-events: none;
     border-radius: inherit;
 }
 
-/* Volume Slider Custom Styling */
+/* Now-playing section inside soundbar - accent label */
+.sound-bar span.text-sky-400,
+.sound-bar span[class*="text-sky"] {
+    color: var(--accent) !important;
+    text-shadow: var(--text-glow-accent);
+}
+.sound-bar i.fa-play-circle {
+    color: var(--accent) !important;
+}
+
+/* ================================================
+   🎚️ VOLUME SLIDER (soundbar) - THEMED
+   ================================================ */
 .volume-slider-container {
     height: 24px;
     display: flex;
@@ -233,8 +457,8 @@ h1 {
     height: 16px;
     border-radius: 50%;
     background: #ffffff;
-    border: 2px solid #38bdf8;
-    box-shadow: 0 0 15px rgba(56, 189, 248, 0.6), 0 0 3px rgba(255, 255, 255, 0.8);
+    border: 2px solid var(--accent);
+    box-shadow: var(--slider-thumb-shadow);
     cursor: pointer !important;
     transition: all 0.2s ease;
     margin-top: 0;
@@ -242,7 +466,7 @@ h1 {
 
 .volume-slider::-webkit-slider-thumb:hover {
     transform: scale(1.2);
-    box-shadow: 0 0 25px rgba(56, 189, 248, 0.9), 0 0 5px rgba(255, 255, 255, 1);
+    box-shadow: 0 0 25px rgba(var(--accent-rgb), 0.95), 0 0 5px rgba(255, 255, 255, 1);
 }
 
 .volume-slider::-moz-range-thumb {
@@ -250,8 +474,8 @@ h1 {
     height: 16px;
     border-radius: 50%;
     background: #ffffff;
-    border: 2px solid #38bdf8;
-    box-shadow: 0 0 15px rgba(56, 189, 248, 0.6);
+    border: 2px solid var(--accent);
+    box-shadow: var(--slider-thumb-shadow);
     cursor: pointer !important;
     transition: all 0.2s ease;
 }
@@ -260,84 +484,149 @@ h1 {
     height: 0;
     background: transparent;
 }
-
 .volume-slider::-moz-range-track {
     height: 0;
     background: transparent;
 }
 
+/* Slider filled portion uses theme gradient + glow */
 .slider-fill {
-    box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+    background: linear-gradient(to right, var(--accent-2), var(--accent)) !important;
+    box-shadow: var(--slider-fill-shadow);
 }
 
-/* Mute / Next Buttons inside Sound Bar */
+/* Mute / Next / Play icons HOVER color matches theme */
 #mute-btn:hover i,
-#track-btn:hover i {
-    color: #38bdf8 !important;
+#track-btn:hover i,
+#play-pause-btn:hover i {
+    color: var(--accent) !important;
     transform: scale(1.1);
 }
 
-#mute-btn i,
-#track-btn i {
+#mute-btn i, #track-btn i, #play-pause-btn i {
     transition: all 0.25s ease;
 }
 
-#mute-btn:hover,
-#track-btn:hover {
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.08);
+#mute-btn:hover, #track-btn:hover, #play-pause-btn:hover {
+    box-shadow: var(--social-hover-shadow);
+    border-color: var(--social-hover-border) !important;
 }
 
-/* Playing state - extra glow on audio button */
+/* Playing state - ring pulse matches theme */
 .is-playing-glow {
-    border-color: rgba(56, 189, 248, 0.6) !important;
-    box-shadow: 0 0 60px -10px rgba(56, 189, 248, 0.55), 0 0 30px -5px rgba(56, 189, 248, 0.35), inset 0 0 15px rgba(56, 189, 248, 0.15);
+    border-color: rgba(var(--accent-rgb), 0.65) !important;
+    box-shadow: var(--playing-glow);
     animation: playing-ring 2.5s ease-in-out infinite;
 }
 
 @keyframes playing-ring {
-    0%, 100% {
-        box-shadow: 0 0 60px -10px rgba(56, 189, 248, 0.55), 0 0 30px -5px rgba(56, 189, 248, 0.35), inset 0 0 15px rgba(56, 189, 248, 0.15);
-    }
-    50% {
-        box-shadow: 0 0 90px -10px rgba(56, 189, 248, 0.8), 0 0 50px -5px rgba(56, 189, 248, 0.55), inset 0 0 25px rgba(56, 189, 248, 0.25);
-    }
+    0%, 100% { box-shadow: var(--playing-glow); }
+    50%      { box-shadow: var(--playing-glow-strong); }
 }
 
-/* Pulse animation for "Now Playing" icon */
+/* Pulse now playing icon */
 .animate-pulse-play {
     animation: pulse-play 1.4s ease-in-out infinite;
 }
-
 @keyframes pulse-play {
     0%, 100% { opacity: 0.6; transform: scale(1); }
-    50% { opacity: 1; transform: scale(1.2); }
+    50%      { opacity: 1;   transform: scale(1.2); }
 }
 
-/* Play/Pause + Next button hover glow inside soundbar */
-#play-pause-btn:hover i,
-#mute-btn:hover i,
-#track-btn:hover i {
-    color: #38bdf8 !important;
-    transform: scale(1.1);
-}
-
-#play-pause-btn i {
-    transition: all 0.25s ease;
-}
-
-#play-pause-btn:hover {
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.08);
-}
-
-/* Keep sound waves always visible when actively playing */
+/* Show sound waves when actively playing */
 .is-playing-glow ~ .sound-waves,
-.audio-button.is-playing-glow .sound-waves {
-    opacity: 1 !important;
+.audio-button.is-playing-glow .sound-waves { opacity: 1 !important; }
+
+/* Helper */
+.truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ================================================
+   🎨 THEME SWITCHER (top-right button + menu)
+   ================================================ */
+
+/* Theme palette button (mirrors audio button on left) */
+.theme-button {
+    background: rgba(255, 255, 255, 0.08) !important;
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    box-shadow: var(--audio-btn-shadow-1), var(--audio-btn-shadow-2);
+}
+.theme-button:hover {
+    transform: scale(1.08);
+    background: rgba(255, 255, 255, 0.14) !important;
+    box-shadow: var(--audio-btn-hover-shadow-1), var(--audio-btn-hover-shadow-2);
+    border-color: rgba(255, 255, 255, 0.25) !important;
 }
 
-/* Track name truncate helper */
-.truncate {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+/* Theme palette icon uses current theme accent */
+#theme-main-icon {
+    color: var(--accent) !important;
+    transition: color 0.3s ease;
+}
+.theme-switcher:hover #theme-main-icon {
+    color: #ffffff !important;
+}
+
+/* Sparkles (5 tiny dots bounce like sound waves, multi-color rainbow!) */
+.theme-sparkles .sparkle {
+    width: 3px;
+    height: 3px;
+    animation: sparkle-bounce 1.2s ease-in-out infinite;
+}
+.theme-sparkles .s1 { animation-delay: 0s;   background: #ffffffcc !important; }
+.theme-sparkles .s2 { animation-delay: 0.12s; background: #38bdf8cc !important; }
+.theme-sparkles .s3 { animation-delay: 0.24s; background: #f472b6cc !important; }
+.theme-sparkles .s4 { animation-delay: 0.36s; background: #a855f7cc !important; }
+.theme-sparkles .s5 { animation-delay: 0.48s; background: #4ade80cc !important; }
+
+@keyframes sparkle-bounce {
+    0%, 100% { transform: translateY(0) scale(1);   opacity: 0.4; }
+    50%      { transform: translateY(-7px) scale(1.3); opacity: 1; }
+}
+
+/* Theme menu dropdown panel */
+.theme-menu {
+    background: rgba(255, 255, 255, 0.08) !important;
+    backdrop-filter: blur(30px) saturate(170%);
+    -webkit-backdrop-filter: blur(30px) saturate(170%);
+    box-shadow: var(--card-hover-shadow-1), var(--card-shadow-2);
+}
+.theme-menu::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--soundbar-radial);
+    pointer-events: none;
+    border-radius: inherit;
+}
+
+/* Theme Studio label uses theme accent */
+.theme-menu > div:first-child > span {
+    color: var(--accent) !important;
+    text-shadow: var(--text-glow-accent);
+}
+
+/* Individual theme option button inside menu */
+.theme-option {
+    position: relative;
+}
+.theme-option:hover {
+    transform: translateX(-3px) scale(1.015);
+}
+.theme-option.active {
+    background: rgba(var(--accent-rgb), 0.08) !important;
+    border-color: rgba(var(--accent-rgb), 0.35) !important;
+    box-shadow: var(--card-shadow-2);
+}
+.theme-option.active .theme-check {
+    opacity: 1 !important;
+    animation: check-pop 0.4s cubic-bezier(0.4,0,0.2,1);
+}
+@keyframes check-pop {
+    0%   { opacity: 0; transform: scale(0.5); }
+    70%  { transform: scale(1.25); }
+    100% { opacity: 1; transform: scale(1); }
 }
