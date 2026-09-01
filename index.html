@@ -190,16 +190,30 @@
          * ============================================================ */
         (async function viewCounter() {
             /* ---------------- CONFIG ---------------- */
-            const SUPABASE_URL = 'https://kkhqemzmkjvsdzbkwexs.supabase.co';
             const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtraHFlbXprbWpkdnNkemt3ZXpzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc5ODYxNTYsImV4cCI6MjEwMzU2MjE1Nn0.OHks5MSoiExZiwXUHcl2MUHzAxDJkpBxoVPvtT-gz2Y';
             const BASE_START = 1377;
-            const VISITOR_ID_KEY = 'tufan_visitor_uuid_v2';
-            const CACHED_TOTAL_KEY = 'tufan_cached_total_v2';
+            const VISITOR_ID_KEY = 'tufan_visitor_uuid_v3';
+            const CACHED_TOTAL_KEY = 'tufan_cached_total_v3';
 
-            // Clean up old/stale keys from previous counter versions (prevents conflicts)
+            /* ★★★ AUTO-DETECT PROJECT REF FROM THE ANON JWT — 100% NO TYPOS ★★★
+               The JWT payload always contains the exact "ref" (project id) that the
+               anon key was issued for. This eliminates ALL possible URL typos.  */
+            let SUPABASE_PROJECT_REF = '';
             try {
-                ['tufan_unique_visitor_v3','tufan_v6_unique','tufan_visitor_uuid_v1','tufan_cached_total_v1','tufan_v6_last_count','counterapi_count_v1','seeyoufarm_count_v1']
-                    .forEach(k => localStorage.removeItem(k));
+                const jwtPayloadB64 = SUPABASE_ANON_KEY.split('.')[1];
+                SUPABASE_PROJECT_REF = JSON.parse(atob(jwtPayloadB64)).ref || '';
+            } catch (e) { SUPABASE_PROJECT_REF = ''; }
+            const SUPABASE_URL = SUPABASE_PROJECT_REF
+                ? `https://${SUPABASE_PROJECT_REF}.supabase.co`
+                : '';
+
+            // Clear every old key from all previous broken counter versions
+            try {
+                Object.keys(localStorage)
+                    .filter(k => k.startsWith('tufan_') || k.includes('visitor') || k.includes('counter') || k.includes('cached_total'))
+                    .forEach(k => {
+                        if (k !== VISITOR_ID_KEY && k !== CACHED_TOTAL_KEY) localStorage.removeItem(k);
+                    });
             } catch(e) {}
 
             /* ---------------- HELPERS ---------------- */
@@ -235,9 +249,9 @@
                     if (!id || id.length < 10) {
                         id = cryptoUUID();
                         localStorage.setItem(VISITOR_ID_KEY, id);
-                        console.log('[counter] ✨ NEW visitor created ->', id);
+                        console.log('[counter] ✨ NEW visitor v3 created ->', id);
                     } else {
-                        console.log('[counter] 🔁 Returning visitor ->', id);
+                        console.log('[counter] 🔁 Returning visitor v3 ->', id);
                     }
                     return id;
                 } catch (e) {
@@ -253,18 +267,18 @@
             console.log('[counter] ⚡ Instant paint from cache ->', initialShow);
             show(initialShow);
 
-            /* ---------------- STEP 2: ABORT IF SUPABASE NOT SET UP ---------------- */
-            if (!SUPABASE_URL || SUPABASE_URL.includes('YOUR-PROJECT') ||
-                !SUPABASE_ANON_KEY || SUPABASE_ANON_KEY.includes('YOUR-ANON')) {
-                console.info('[counter] Supabase not configured. Keeping cached/base value only.');
+            /* ---------------- STEP 2: SANITY CHECKS ---------------- */
+            if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+                console.error('[counter] ❌ Could not extract project ref from JWT - aborting');
                 return;
             }
+            console.log('[counter] 🎯 Auto-detected Supabase URL FROM JWT ->', SUPABASE_URL);
 
             const visitorId = getOrCreateVisitorId();
             const endpoint = `${SUPABASE_URL}/rest/v1/rpc/register_visit`;
             const headers = {
                 'apikey': SUPABASE_ANON_KEY,
-                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
                 'Content-Type': 'application/json',
                 'Cache-Control': 'no-store, no-cache, must-revalidate',
                 'Accept': 'application/json'
@@ -273,12 +287,16 @@
             async function callBackend(retry) {
                 try {
                     console.log('[counter] 📤 POST ->', endpoint, 'with vid =', visitorId);
+                    const ctrl = new AbortController();
+                    const timeout = setTimeout(() => ctrl.abort(), 9000);
                     const r = await fetch(endpoint, {
                         method: 'POST',
                         headers,
                         body: JSON.stringify({ vid: visitorId }),
-                        cache: 'no-store'
+                        cache: 'no-store',
+                        signal: ctrl.signal
                     });
+                    clearTimeout(timeout);
                     const rawText = await r.text();
                     console.log('[counter] 📥 HTTP', r.status, 'raw body:', rawText);
                     if (r.status === 429 || r.status >= 500) throw new Error('retryable ' + r.status + ' body: ' + rawText.slice(0, 200));
@@ -290,8 +308,9 @@
                     console.log('[counter] 🏁 Backend result -> counted:', payload.counted, '| TOTAL UNIQUE:', payload.total);
                     return payload;
                 } catch (e) {
+                    if (e.name === 'AbortError') throw new Error('timeout after 9s');
                     if (retry && retry > 0) {
-                        await new Promise(rs => setTimeout(rs, 600 * (3 - retry)));
+                        await new Promise(rs => setTimeout(rs, 700 * (3 - retry)));
                         return callBackend(retry - 1);
                     }
                     throw e;
