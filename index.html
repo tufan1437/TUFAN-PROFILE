@@ -4,9 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AURA | @TUFAN1437</title>
+    <!-- CRITICAL PRELOAD: Apply saved theme BEFORE CSS/JS loads (prevents flash of wrong colors) -->
+    <script>
+        (function () {
+            try {
+                var saved = localStorage.getItem('tufan_theme_v1') || 'sky';
+                var valid = ['sky', 'sakura', 'midnight', 'ocean', 'matcha'];
+                if (valid.indexOf(saved) === -1) saved = 'sky';
+                document.documentElement.setAttribute('data-theme', saved);
+                window.__INITIAL_THEME = saved;
+            } catch (e) {
+                document.documentElement.setAttribute('data-theme', 'sky');
+                window.__INITIAL_THEME = 'sky';
+            }
+        })();
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="styles.css?v=1.1">
+    <link rel="stylesheet" href="styles.css?v=1.2">
 </head>
 <body class="bg-black text-white selection:bg-white/20">
     <div class="background-wrapper">
@@ -69,6 +84,83 @@
                 <button id="track-btn" class="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300">
                     <i class="fas fa-forward text-sm text-white/70"></i>
                     <span class="text-xs font-semibold text-white/80">Next</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Theme Switcher (Top-Right Corner) -->
+    <div class="theme-switcher fixed right-6 top-6 z-50 group">
+        <button id="theme-btn" class="theme-button relative flex items-center justify-center w-14 h-14 rounded-2xl glass-card border border-white/10 transition-all duration-300 overflow-hidden">
+            <i id="theme-main-icon" class="fas fa-palette text-xl text-sky-400 group-hover:text-white transition-colors"></i>
+            <span class="theme-sparkles absolute inset-0 flex items-center justify-center gap-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                <span class="sparkle s1 bg-white/70 rounded-full"></span>
+                <span class="sparkle s2 bg-sky-400/80 rounded-full"></span>
+                <span class="sparkle s3 bg-pink-400/80 rounded-full"></span>
+                <span class="sparkle s4 bg-purple-400/80 rounded-full"></span>
+                <span class="sparkle s5 bg-emerald-400/80 rounded-full"></span>
+            </span>
+        </button>
+
+        <!-- Theme Menu (Appears on Hover - slides in from right) -->
+        <div class="theme-menu absolute right-full mr-4 top-0 px-4 py-3 rounded-2xl glass-card border border-white/10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-400 translate-x-[10px] group-hover:translate-x-0 min-w-[260px]">
+            <div class="mb-3 pb-2 border-b border-white/5">
+                <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-sky-400/90"><i class="fas fa-magic mr-1"></i> Theme Studio</span>
+            </div>
+            <div class="flex flex-col gap-2">
+                <button data-theme="sky" class="theme-option active group-th flex items-center gap-3 p-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300">
+                    <span class="theme-preview w-10 h-10 rounded-xl bg-gradient-to-br from-sky-300 via-blue-400 to-cyan-500 flex items-center justify-center shadow-lg border border-white/20">
+                        <i class="fas fa-cloud-sun text-[13px] text-white drop-shadow"></i>
+                    </span>
+                    <div class="flex-1 text-left">
+                        <div class="text-xs font-bold text-white">Default Sky</div>
+                        <div class="text-[10px] text-white/50">Clouds & blue skies</div>
+                    </div>
+                    <i class="theme-check fas fa-check-circle text-sky-400 text-sm opacity-0"></i>
+                </button>
+
+                <button data-theme="sakura" class="theme-option group-th flex items-center gap-3 p-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300">
+                    <span class="theme-preview w-10 h-10 rounded-xl bg-gradient-to-br from-pink-300 via-pink-400 to-rose-500 flex items-center justify-center shadow-lg border border-white/20">
+                        <i class="fas fa-seedling text-[13px] text-white drop-shadow"></i>
+                    </span>
+                    <div class="flex-1 text-left">
+                        <div class="text-xs font-bold text-white">Sakura Pink</div>
+                        <div class="text-[10px] text-white/50">Cherry blossom glow</div>
+                    </div>
+                    <i class="theme-check fas fa-check-circle text-pink-400 text-sm opacity-0"></i>
+                </button>
+
+                <button data-theme="midnight" class="theme-option group-th flex items-center gap-3 p-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300">
+                    <span class="theme-preview w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-900 via-purple-700 to-fuchsia-700 flex items-center justify-center shadow-lg border border-white/20">
+                        <i class="fas fa-moon text-[13px] text-white drop-shadow"></i>
+                    </span>
+                    <div class="flex-1 text-left">
+                        <div class="text-xs font-bold text-white">Midnight Dark</div>
+                        <div class="text-[10px] text-white/50">Cyberpunk neon night</div>
+                    </div>
+                    <i class="theme-check fas fa-check-circle text-purple-400 text-sm opacity-0"></i>
+                </button>
+
+                <button data-theme="ocean" class="theme-option group-th flex items-center gap-3 p-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300">
+                    <span class="theme-preview w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 via-teal-500 to-blue-600 flex items-center justify-center shadow-lg border border-white/20">
+                        <i class="fas fa-water text-[13px] text-white drop-shadow"></i>
+                    </span>
+                    <div class="flex-1 text-left">
+                        <div class="text-xs font-bold text-white">Ocean Neon</div>
+                        <div class="text-[10px] text-white/50">Retro wave vibes</div>
+                    </div>
+                    <i class="theme-check fas fa-check-circle text-cyan-400 text-sm opacity-0"></i>
+                </button>
+
+                <button data-theme="matcha" class="theme-option group-th flex items-center gap-3 p-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300">
+                    <span class="theme-preview w-10 h-10 rounded-xl bg-gradient-to-br from-lime-400 via-emerald-500 to-teal-600 flex items-center justify-center shadow-lg border border-white/20">
+                        <i class="fas fa-leaf text-[13px] text-white drop-shadow"></i>
+                    </span>
+                    <div class="flex-1 text-left">
+                        <div class="text-xs font-bold text-white">Matcha Sage</div>
+                        <div class="text-[10px] text-white/50">Zen garden green</div>
+                    </div>
+                    <i class="theme-check fas fa-check-circle text-emerald-400 text-sm opacity-0"></i>
                 </button>
             </div>
         </div>
@@ -162,22 +254,108 @@
 
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script>
-        particlesJS("particles-js", {
-            "particles": {
-                "number": { "value": 120, "density": { "enable": true, "value_area": 800 } },
-                "color": { "value": "#ffffff" },
-                "shape": { "type": "circle" },
-                "opacity": { "value": 0.5, "random": true, "anim": { "enable": true, "speed": 1, "opacity_min": 0.1, "sync": false } },
-                "size": { "value": 3, "random": true, "anim": { "enable": true, "speed": 2, "size_min": 0.1, "sync": false } },
-                "line_linked": { "enable": false },
-                "move": { "enable": true, "speed": 0.8, "direction": "top-right", "random": true, "straight": false, "out_mode": "out" }
-            },
-            "interactivity": {
-                "detect_on": "canvas",
-                "events": { "onhover": { "enable": true, "mode": "bubble" }, "onclick": { "enable": true, "mode": "push" } },
-                "modes": { "bubble": { "distance": 250, "size": 0, "duration": 2, "opacity": 0, "speed": 3 }, "push": { "particles_nb": 4 } }
+        /* =============== PARTICLES + THEME SWITCHER =============== */
+
+        // Returns the current CSS particle color (var(--particles)) from active theme
+        function getCurrentParticleColor() {
+            try {
+                return getComputedStyle(document.documentElement).getPropertyValue('--particles').trim() || '#ffffff';
+            } catch (e) { return '#ffffff'; }
+        }
+
+        // Builds full particles.js config with provided particle color
+        function buildParticlesConfig(particleColor) {
+            return {
+                "particles": {
+                    "number": { "value": 120, "density": { "enable": true, "value_area": 800 } },
+                    "color": { "value": particleColor },
+                    "shape": { "type": "circle" },
+                    "opacity": { "value": 0.5, "random": true, "anim": { "enable": true, "speed": 1, "opacity_min": 0.1, "sync": false } },
+                    "size": { "value": 3, "random": true, "anim": { "enable": true, "speed": 2, "size_min": 0.1, "sync": false } },
+                    "line_linked": { "enable": false },
+                    "move": { "enable": true, "speed": 0.8, "direction": "top-right", "random": true, "straight": false, "out_mode": "out" }
+                },
+                "interactivity": {
+                    "detect_on": "canvas",
+                    "events": { "onhover": { "enable": true, "mode": "bubble" }, "onclick": { "enable": true, "mode": "push" } },
+                    "modes": { "bubble": { "distance": 250, "size": 0, "duration": 2, "opacity": 0, "speed": 3 }, "push": { "particles_nb": 4 } }
+                }
+            };
+        }
+
+        // Initialize particles using the currently active theme's particle color
+        // (head preload script already set data-theme before this runs!)
+        particlesJS("particles-js", buildParticlesConfig(getCurrentParticleColor()));
+
+        // =============== THEME SWITCHER LOGIC ===============
+        (function themeSwitcher() {
+            const VALID_THEMES = ['sky', 'sakura', 'midnight', 'ocean', 'matcha'];
+            const STORAGE_KEY = 'tufan_theme_v1';
+            const html = document.documentElement;
+
+            // Returns currently applied theme (from html[data-theme])
+            function currentTheme() {
+                const t = html.getAttribute('data-theme') || 'sky';
+                return VALID_THEMES.indexOf(t) === -1 ? 'sky' : t;
             }
-        });
+
+            // Updates active-check state in the theme menu UI
+            function updateMenuUI(theme) {
+                try {
+                    const all = document.querySelectorAll('.theme-option');
+                    const allChecks = document.querySelectorAll('.theme-check');
+                    all.forEach(el => {
+                        const isMatch = el.getAttribute('data-theme') === theme;
+                        el.classList.toggle('active', isMatch);
+                    });
+                } catch (e) {}
+            }
+
+            // Rebuilds particles with the new theme's color
+            function updateParticlesForTheme() {
+                try {
+                    const pContainer = document.getElementById('particles-js');
+                    if (window.pJSDom && window.pJSDom[0] && window.pJSDom[0].pJS && typeof pJSDom[0].pJS.fn.vendors.destroypJS === 'function') {
+                        pJSDom[0].pJS.fn.vendors.destroypJS();
+                        window.pJSDom = [];
+                    }
+                    if (pContainer) pContainer.innerHTML = '';
+                    particlesJS('particles-js', buildParticlesConfig(getCurrentParticleColor()));
+                } catch (e) {
+                    // Fallback - particles not ready, ignore
+                }
+            }
+
+            // Applies a theme: data-attr -> localStorage -> UI particles
+            function applyTheme(theme, persist) {
+                if (VALID_THEMES.indexOf(theme) === -1) theme = 'sky';
+                html.setAttribute('data-theme', theme);
+                if (persist !== false) {
+                    try { localStorage.setItem(STORAGE_KEY, theme); } catch (e) {}
+                }
+                updateMenuUI(theme);
+                // Update particles after a tiny delay so CSS variables are recomputed for new theme
+                setTimeout(updateParticlesForTheme, 50);
+            }
+
+            // Hook up click handlers for each theme option
+            document.addEventListener('DOMContentLoaded', function () {
+                // Apply initial (head script set it, but ensure menu UI state is synced)
+                updateMenuUI(currentTheme());
+
+                const options = document.querySelectorAll('.theme-option');
+                options.forEach(btn => {
+                    btn.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        const theme = btn.getAttribute('data-theme');
+                        applyTheme(theme, true);
+                    });
+                });
+            });
+
+            // Expose for debugging only: window.applyTheme()
+            window.applyTheme = applyTheme;
+        })();
 
         /* ============================================================
          *  PRODUCTION UNIQUE-VISITOR COUNTER
