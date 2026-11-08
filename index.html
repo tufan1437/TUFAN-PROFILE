@@ -118,17 +118,6 @@
                     <i class="theme-check fas fa-check-circle text-sky-400 text-sm opacity-0"></i>
                 </button>
 
-                <button data-theme="sakura" class="theme-option group-th flex items-center gap-3 p-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300">
-                    <span class="theme-preview w-10 h-10 rounded-xl bg-gradient-to-br from-pink-300 via-pink-400 to-rose-500 flex items-center justify-center shadow-lg border border-white/20">
-                        <i class="fas fa-seedling text-[13px] text-white drop-shadow"></i>
-                    </span>
-                    <div class="flex-1 text-left">
-                        <div class="text-xs font-bold text-white">Sakura Pink</div>
-                        <div class="text-[10px] text-white/50">Cherry blossom glow</div>
-                    </div>
-                    <i class="theme-check fas fa-check-circle text-pink-400 text-sm opacity-0"></i>
-                </button>
-
                 <button data-theme="midnight" class="theme-option group-th flex items-center gap-3 p-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300">
                     <span class="theme-preview w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-900 via-purple-700 to-fuchsia-700 flex items-center justify-center shadow-lg border border-white/20">
                         <i class="fas fa-moon text-[13px] text-white drop-shadow"></i>
@@ -138,6 +127,17 @@
                         <div class="text-[10px] text-white/50">Cyberpunk neon night</div>
                     </div>
                     <i class="theme-check fas fa-check-circle text-purple-400 text-sm opacity-0"></i>
+                </button>
+
+                <button data-theme="sakura" class="theme-option group-th flex items-center gap-3 p-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300">
+                    <span class="theme-preview w-10 h-10 rounded-xl bg-gradient-to-br from-pink-300 via-pink-400 to-rose-500 flex items-center justify-center shadow-lg border border-white/20">
+                        <i class="fas fa-seedling text-[13px] text-white drop-shadow"></i>
+                    </span>
+                    <div class="flex-1 text-left">
+                        <div class="text-xs font-bold text-white">Sakura Pink</div>
+                        <div class="text-[10px] text-white/50">Cherry blossom glow</div>
+                    </div>
+                    <i class="theme-check fas fa-check-circle text-pink-400 text-sm opacity-0"></i>
                 </button>
 
                 <button data-theme="ocean" class="theme-option group-th flex items-center gap-3 p-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300">
@@ -343,7 +343,7 @@
 
         // =============== THEME SWITCHER + AUTO-SHOWCASE ROTATION ===============
         (function themeSwitcher() {
-            const VALID_THEMES = ['sky', 'sakura', 'midnight', 'ocean', 'matcha'];
+            const VALID_THEMES = ['sky', 'midnight', 'sakura', 'ocean', 'matcha'];
             // Metadata for nice display + next-theme preview swatches
             const THEME_META = {
                 sky:      { name: 'Default Sky',  gradient: 'from-sky-300 via-blue-500 to-cyan-500' },
