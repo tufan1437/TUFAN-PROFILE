@@ -950,38 +950,90 @@
             updateMuteUI();
         }
 
-        // The browser's "unlock" event class. Chrome and Edge both accept mouse MOVEMENT
-        // and even a bare pointerover as a user activation, which is what makes this feel
-        // like true autoplay: the visitor never has to click anything — the cursor entering
-        // the page is enough for the browser to grant audible playback.
+        // Vivaldi (and some hardened Chromium builds) are stricter than Chrome:
+        //   - they do NOT treat pointermove/mousemove as user activation
+        //   - their default autoplay setting blocks even MUTED play()
+        // So we keep the cheap events for Chrome/Edge (where cursor movement works and
+        // autoplay is effectively free) but guarantee that the first REAL click/tap/key
+        // anywhere on the page starts playback in the same tick. That is the strongest
+        // thing any page can do on a locked-down browser: one click on ANYTHING, not a
+        // specific button, and music starts. No prompt is ever shown.
         const GESTURE_EVENTS = [
-            'pointerdown', 'pointerup', 'pointermove', 'pointerover',   // mouse / pen
-            'touchstart', 'touchend', 'touchmove',                       // mobile
-            'keydown', 'keyup', 'wheel', 'scroll', 'mouseover', 'mousemove'
+            'pointerdown', 'pointerup', 'mousedown', 'mouseup', 'click', 'touchend', 'keydown',
+            'touchstart', 'pointermove', 'pointerover', 'mousemove', 'mouseover',
+            'wheel', 'scroll', 'keyup'
         ];
+        // Events that EVERY engine (including Vivaldi) accepts as user activation.
+        const HARD_UNLOCK_EVENTS = ['pointerdown', 'mousedown', 'click', 'touchstart', 'touchend', 'keydown'];
 
         function armGestureUnlock() {
-            function onGesture() {
-                GESTURE_EVENTS.forEach(ev => {
-                    document.removeEventListener(ev, onGesture, true);
-                    window.removeEventListener(ev, onGesture, true);
-                });
-                // Same tick as the gesture = the browser counts it as user activation.
-                if (!audio.paused) {
-                    // already playing muted — make it audible now, no second gesture needed
-                    audio.muted = false;
-                    isMuted = false;
-                    const restore = lastVolume > 0 ? lastVolume : 50;
-                    audio.volume = restore / 100;
-                    volumeSlider.value = restore;
-                    updateVolumeUI(restore);
-                    updateMuteUI();
-                    autoplayLocked = true;
-                    return;
+            let done = false;
+
+            function onGesture(ev) {
+                if (done) return;
+                // For soft events (mousemove in Chrome) we only act when the browser will
+                // actually honour it. If it refuses, we stay armed and wait for a hard one.
+                const isHard = HARD_UNLOCK_EVENTS.indexOf(ev.type) !== -1;
+
+                const start = () => {
+                    done = true;
+                    GESTURE_EVENTS.forEach(e => {
+                        document.removeEventListener(e, onGesture, true);
+                        window.removeEventListener(e, onGesture, true);
+                    });
+                    if (!audio.paused) {
+                        // already playing muted -> just make it audible
+                        audio.muted = false;
+                        isMuted = false;
+                        const restore = lastVolume > 0 ? lastVolume : 50;
+                        audio.volume = restore / 100;
+                        volumeSlider.value = restore;
+                        updateVolumeUI(restore);
+                        updateMuteUI();
+                        autoplayLocked = true;
+                        return;
+                    }
+                    applyAudibleVolume();
+                    const p = audio.play();
+                    if (p && p.then) {
+                        p.then(markPlaying).catch(() => {
+                            // Browser refused even on a hard gesture: try muted + re-arm.
+                            audio.muted = true;
+                            isMuted = true;
+                            updateMuteUI();
+                            const p2 = audio.play();
+                            if (p2 && p2.then) p2.then(markPlaying).catch(() => {});
+                        });
+                    } else {
+                        markPlaying();
+                    }
+                };
+
+                if (isHard) {
+                    start();
+                } else {
+                    // Soft event: attempt, but stay armed if the browser ignores it.
+                    done = true;
+                    applyAudibleVolume();
+                    const p = audio.play();
+                    if (p && p.then) {
+                        p.then(markPlaying).catch(() => {
+                            // Vivaldi rejected it -> undo the disarm, keep listening.
+                            done = false;
+                            audio.muted = false;
+                            isMuted = false;
+                            updateMuteUI();
+                            GESTURE_EVENTS.forEach(e => {
+                                document.addEventListener(e, onGesture, { capture: true, passive: true });
+                                window.addEventListener(e, onGesture, { capture: true, passive: true });
+                            });
+                        });
+                    } else {
+                        markPlaying();
+                    }
                 }
-                applyAudibleVolume();
-                audio.play().then(markPlaying).catch(() => { /* still blocked */ });
             }
+
             GESTURE_EVENTS.forEach(ev => {
                 document.addEventListener(ev, onGesture, { capture: true, passive: true });
                 window.addEventListener(ev, onGesture, { capture: true, passive: true });
@@ -1013,13 +1065,13 @@
                     // Cursor movement / scroll / any touch makes it audible with zero clicks.
                     armGestureUnlock();
                 }).catch(() => {
-                    // ---- Attempt 3: browser is fully locked ----
+                    // ---- Attempt 3: browser is fully locked (Vivaldi, strict Safari) ----
                     armGestureUnlock();
                     autoplayTries++;
                     if (autoplayTries <= 6) {
                         setTimeout(tryAutoplay, 1200 * autoplayTries);
                     } else {
-                        document.__autoplayGiveUp = true; // stop hammering, gesture listener still armed
+                        document.__autoplayGiveUp = true; // gesture listener still armed
                     }
                 });
             };
