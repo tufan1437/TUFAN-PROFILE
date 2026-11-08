@@ -950,27 +950,47 @@
             updateMuteUI();
         }
 
-        // The browser's "unlock" event class — any real gesture. We listen once on each
-        // and re-fire play(); if unmuted play succeeds the music simply becomes audible.
-        const GESTURE_EVENTS = ['pointerdown', 'touchstart', 'keydown', 'wheel', 'scroll'];
+        // The browser's "unlock" event class. Chrome and Edge both accept mouse MOVEMENT
+        // and even a bare pointerover as a user activation, which is what makes this feel
+        // like true autoplay: the visitor never has to click anything — the cursor entering
+        // the page is enough for the browser to grant audible playback.
+        const GESTURE_EVENTS = [
+            'pointerdown', 'pointerup', 'pointermove', 'pointerover',   // mouse / pen
+            'touchstart', 'touchend', 'touchmove',                       // mobile
+            'keydown', 'keyup', 'wheel', 'scroll', 'mouseover', 'mousemove'
+        ];
 
         function armGestureUnlock() {
             function onGesture() {
-                GESTURE_EVENTS.forEach(ev => window.removeEventListener(ev, onGesture, true));
-                if (autoplayLocked) {
-                    // already playing muted — try to make it audible without a second click
-                    applyAudibleVolume();
-                    audio.play().catch(() => { /* still blocked, stay muted */ });
-                } else {
-                    applyAudibleVolume();
-                    audio.play().then(markPlaying).catch(() => { /* browser still says no */ });
+                GESTURE_EVENTS.forEach(ev => {
+                    document.removeEventListener(ev, onGesture, true);
+                    window.removeEventListener(ev, onGesture, true);
+                });
+                // Same tick as the gesture = the browser counts it as user activation.
+                if (!audio.paused) {
+                    // already playing muted — make it audible now, no second gesture needed
+                    audio.muted = false;
+                    isMuted = false;
+                    const restore = lastVolume > 0 ? lastVolume : 50;
+                    audio.volume = restore / 100;
+                    volumeSlider.value = restore;
+                    updateVolumeUI(restore);
+                    updateMuteUI();
+                    autoplayLocked = true;
+                    return;
                 }
+                applyAudibleVolume();
+                audio.play().then(markPlaying).catch(() => { /* still blocked */ });
             }
-            GESTURE_EVENTS.forEach(ev => window.addEventListener(ev, onGesture, { capture: true, passive: true }));
+            GESTURE_EVENTS.forEach(ev => {
+                document.addEventListener(ev, onGesture, { capture: true, passive: true });
+                window.addEventListener(ev, onGesture, { capture: true, passive: true });
+            });
         }
 
         function tryAutoplay() {
             if (playlist.length === 0) return;
+            if (document.__autoplayGiveUp) return;
 
             // If a track is already loaded (e.g. user pressed Next before load), keep it
             if (!audio.src) loadTrack(0, false);
@@ -980,10 +1000,7 @@
             isMuted = false;
             audio.volume = (lastVolume > 0 ? lastVolume : 50) / 100;
 
-            audio.play().then(() => {
-                markPlaying();
-                updateMuteUI();
-            }).catch(() => {
+            const fail1 = () => {
                 // ---- Attempt 2: muted autoplay (universally permitted) ----
                 audio.muted = true;
                 isMuted = true;
@@ -991,28 +1008,41 @@
 
                 audio.play().then(() => {
                     markPlaying();
+                    autoplayLocked = false; // playing, but silent — still needs unlocking
                     // Music is genuinely running now, just silent. Do NOT nag the visitor.
-                    // The next natural gesture anywhere makes it audible with zero clicks.
+                    // Cursor movement / scroll / any touch makes it audible with zero clicks.
                     armGestureUnlock();
                 }).catch(() => {
-                    // ---- Attempt 3: browser is fully locked. Wait for its unlock moment. ----
-                    // Still no "click to play" prompt — we catch the first gesture silently.
+                    // ---- Attempt 3: browser is fully locked ----
                     armGestureUnlock();
-                    // ---- Attempt 4: poll a few times in case policy relaxes (MEI warm-up) ----
                     autoplayTries++;
-                    if (autoplayTries <= 5) {
-                        setTimeout(tryAutoplay, 1500 * autoplayTries);
+                    if (autoplayTries <= 6) {
+                        setTimeout(tryAutoplay, 1200 * autoplayTries);
+                    } else {
+                        document.__autoplayGiveUp = true; // stop hammering, gesture listener still armed
                     }
                 });
-            });
+            };
+
+            const p = audio.play();
+            if (p && typeof p.then === 'function') {
+                p.then(() => {
+                    markPlaying();
+                    updateMuteUI();
+                }).catch(fail1);
+            } else {
+                // Very old browsers return undefined from play()
+                markPlaying();
+                updateMuteUI();
+            }
         }
 
         // Fire immediately on DOM ready (not window.load) — less waiting, better chance
         // the browser still counts it as a fresh "autoplay" gesture context.
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => setTimeout(tryAutoplay, 300));
+            document.addEventListener('DOMContentLoaded', () => setTimeout(tryAutoplay, 100));
         } else {
-            setTimeout(tryAutoplay, 300);
+            setTimeout(tryAutoplay, 100);
         }
 
         // Also retry once the media can actually play through (fixes slow-network races)
