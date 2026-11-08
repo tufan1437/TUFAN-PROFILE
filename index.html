@@ -843,10 +843,15 @@
         }
 
         // =============== EVENT LISTENERS ===============
+        // Any explicit click means the visitor wants control — mark it so the
+        // gesture-unlock handler stops overriding their intent.
+        audio.addEventListener('playing', markPlaying);
+        audio.addEventListener('pause', () => { isPlaying = false; updatePlayStateUI(); });
 
         // Big audio button = toggle play/pause
         audioBtn.addEventListener('click', (e) => {
             e.preventDefault();
+            autoplayLocked = true; // visitor took control — stop auto-retrying
             if (!audio.src && playlist.length > 0) loadTrack(0, true);
             else togglePlayPause();
         });
@@ -854,6 +859,7 @@
         // Play/Pause button inside sound bar
         playPauseBtn.addEventListener('click', (e) => {
             e.preventDefault();
+            autoplayLocked = true;
             if (!audio.src && playlist.length > 0) loadTrack(0, true);
             else togglePlayPause();
         });
@@ -868,6 +874,7 @@
 
         // Volume slider
         volumeSlider.addEventListener('input', (e) => {
+            autoplayLocked = true;
             const value = Number(e.target.value);
             audio.volume = value / 100;
             updateVolumeUI(value);
@@ -886,6 +893,7 @@
         muteBtn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
+            autoplayLocked = true;
             if (isMuted || audio.muted) {
                 isMuted = false;
                 audio.muted = false;
@@ -913,55 +921,114 @@
             trackName.style.color = '#f87171';
         });
 
-        // =============== AUTO-PLAY ON PAGE LOAD ===============
+        // =============== AUTO-PLAY ON PAGE LOAD (NO CLICK NEEDED) ===============
+        // Chrome/Edge allow unmuted autoplay when the origin has media engagement
+        // (Media Engagement Index) or the user muted it before on this origin.
+        // Safari/Firefox refuse outright. So the ladder is:
+        //   1. fire unmuted immediately -> works for returning visitors / MEI sites
+        //   2. fall back to muted autoplay -> always allowed, music is running
+        //   3. auto-unmute silently on the first ANY gesture anywhere (not a required click
+        //      to start, just the browser's own unlock event that we catch and use)
+        //   4. keep retrying on a timer in case the browser grants permission late
+        let autoplayLocked = false;   // true once audible playback is confirmed
+        let autoplayTries = 0;
+
+        function markPlaying() {
+            isPlaying = true;
+            updatePlayStateUI();
+            autoplayLocked = true;
+        }
+
+        // Keeps the real volume glue consistent whenever we flip mute state
+        function applyAudibleVolume() {
+            const restore = lastVolume > 0 ? lastVolume : 50;
+            audio.muted = false;
+            isMuted = false;
+            audio.volume = restore / 100;
+            volumeSlider.value = restore;
+            updateVolumeUI(restore);
+            updateMuteUI();
+        }
+
+        // The browser's "unlock" event class — any real gesture. We listen once on each
+        // and re-fire play(); if unmuted play succeeds the music simply becomes audible.
+        const GESTURE_EVENTS = ['pointerdown', 'touchstart', 'keydown', 'wheel', 'scroll'];
+
+        function armGestureUnlock() {
+            function onGesture() {
+                GESTURE_EVENTS.forEach(ev => window.removeEventListener(ev, onGesture, true));
+                if (autoplayLocked) {
+                    // already playing muted — try to make it audible without a second click
+                    applyAudibleVolume();
+                    audio.play().catch(() => { /* still blocked, stay muted */ });
+                } else {
+                    applyAudibleVolume();
+                    audio.play().then(markPlaying).catch(() => { /* browser still says no */ });
+                }
+            }
+            GESTURE_EVENTS.forEach(ev => window.addEventListener(ev, onGesture, { capture: true, passive: true }));
+        }
+
         function tryAutoplay() {
             if (playlist.length === 0) return;
-            loadTrack(0, false);
 
-            // Strategy 1: Try normal autoplay first
+            // If a track is already loaded (e.g. user pressed Next before load), keep it
+            if (!audio.src) loadTrack(0, false);
+
+            // ---- Attempt 1: unmuted ----
+            audio.muted = false;
+            isMuted = false;
+            audio.volume = (lastVolume > 0 ? lastVolume : 50) / 100;
+
             audio.play().then(() => {
-                isPlaying = true;
-                updatePlayStateUI();
+                markPlaying();
+                updateMuteUI();
             }).catch(() => {
-                // Strategy 2: Try autoplay MUTED (browsers allow muted autoplay)
+                // ---- Attempt 2: muted autoplay (universally permitted) ----
                 audio.muted = true;
                 isMuted = true;
                 updateMuteUI();
+
                 audio.play().then(() => {
-                    isPlaying = true;
-                    updatePlayStateUI();
-                    // Show hint that user can unmute
-                    trackName.textContent = '🔇 Playing muted - click Mute to unmute';
-                    trackName.style.color = '#38bdf8';
-                    setTimeout(() => { trackName.style.color = ''; updateTrackUI(); }, 4000);
+                    markPlaying();
+                    // Music is genuinely running now, just silent. Do NOT nag the visitor.
+                    // The next natural gesture anywhere makes it audible with zero clicks.
+                    armGestureUnlock();
                 }).catch(() => {
-                    // Strategy 3: Wait for FIRST user interaction anywhere
-                    trackName.textContent = '👆 Click anywhere to start music';
-                    trackName.style.color = '#facc15';
-                    const startOnInteract = () => {
-                        audio.muted = false;
-                        isMuted = false;
-                        audio.volume = 0.5;
-                        volumeSlider.value = 50;
-                        updateVolumeUI(50);
-                        updateMuteUI();
-                        playAudio();
-                        document.removeEventListener('click', startOnInteract);
-                        document.removeEventListener('scroll', startOnInteract);
-                        document.removeEventListener('keydown', startOnInteract);
-                        document.removeEventListener('touchstart', startOnInteract);
-                    };
-                    document.addEventListener('click', startOnInteract);
-                    document.addEventListener('scroll', startOnInteract);
-                    document.addEventListener('keydown', startOnInteract);
-                    document.addEventListener('touchstart', startOnInteract);
+                    // ---- Attempt 3: browser is fully locked. Wait for its unlock moment. ----
+                    // Still no "click to play" prompt — we catch the first gesture silently.
+                    armGestureUnlock();
+                    // ---- Attempt 4: poll a few times in case policy relaxes (MEI warm-up) ----
+                    autoplayTries++;
+                    if (autoplayTries <= 5) {
+                        setTimeout(tryAutoplay, 1500 * autoplayTries);
+                    }
                 });
             });
         }
 
-        // Kick off autoplay after a tiny delay so page loads first
-        window.addEventListener('load', () => {
-            setTimeout(tryAutoplay, 600);
+        // Fire immediately on DOM ready (not window.load) — less waiting, better chance
+        // the browser still counts it as a fresh "autoplay" gesture context.
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => setTimeout(tryAutoplay, 300));
+        } else {
+            setTimeout(tryAutoplay, 300);
+        }
+
+        // Also retry once the media can actually play through (fixes slow-network races)
+        audio.addEventListener('canplaythrough', () => {
+            if (!autoplayLocked && !audio.paused) return; // already fine
+            if (!autoplayLocked) tryAutoplay();
+        }, { once: true });
+
+        // Page returning from bfcache — browsers often grant playback then, no click needed
+        window.addEventListener('pageshow', (e) => {
+            if (e.persisted) tryAutoplay();
+        });
+
+        // Tab regains focus — another chance the policy allows it now
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && !autoplayLocked) tryAutoplay();
         });
 
         // Init UI
