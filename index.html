@@ -354,8 +354,9 @@
             };
             const STORAGE_KEY = 'tufan_theme_v1';
             const html = document.documentElement;
-            const ROTATE_EVERY = 6;     // seconds before auto-changing theme (total = 5 countdowns + 1s wait = 6)
-            const DISPLAY_COUNTDOWN = 5;// shown number of seconds in message
+            const TICK_MS = 900;        // countdown tick length — 0.9s makes counts run slightly fast
+            const ROTATE_EVERY = 5;     // displayed seconds per theme (5 ticks x 0.9s = ~4.5s real)
+            const DISPLAY_COUNTDOWN = 5;// shown number of seconds in message (stays 5)
 
             /* ---------- Showcase state ---------- */
             let isShowcaseActive = true; // rotation ON by default
@@ -491,6 +492,8 @@
             function tickCountdown() {
                 if (!isShowcaseActive) return;
                 secondsLeft -= 1;
+                // Show 0 briefly instead of jumping straight from 1 to the theme change,
+                // so every displayed number gets its full second on screen.
                 if (secondsLeft < 0) {
                     rotateNextTheme();
                     return;
@@ -515,7 +518,7 @@
                 // Initialize: on page open we start at theme #0 (Default Sky), first change will be to #1 (Sakura) after 5s
                 secondsLeft = DISPLAY_COUNTDOWN;
                 setCountdownNumber(secondsLeft, false);
-                countdownInterval = setInterval(tickCountdown, 1000);
+                countdownInterval = setInterval(tickCountdown, TICK_MS);
             }
             function stopShowcaseTimers(hideToastFlag) {
                 if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
