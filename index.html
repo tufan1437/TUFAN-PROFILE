@@ -20,7 +20,7 @@
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="styles.css?v=1.4">
+    <link rel="stylesheet" href="styles.css?v=1.5">
 </head>
 <body class="bg-black text-white selection:bg-white/20">
     <div class="background-wrapper">
@@ -565,6 +565,24 @@
 
                 // 5) Start rotation after short 1.4s delay so page fade-in completes first
                 setTimeout(startShowcase, 1400);
+
+                // 6) Suppress the showcase toast while the Theme Studio menu is open.
+                //    The menu is CSS hover-driven, so no JS state is needed for the common
+                //    case (handled by a sibling selector in styles.css). The touch path has
+                //    no hover, so we track the switcher tap and mirror it with .force-hidden
+                //    so tapping the palette hides the toast exactly like hovering does.
+                const switcher = document.querySelector('.theme-switcher');
+                if (switcher) {
+                    // Touch devices: first tap opens the menu, tapping outside closes it.
+                    switcher.addEventListener('touchstart', () => {
+                        switcher.classList.add('force-hidden');
+                    }, { passive: true });
+                    document.addEventListener('touchstart', (e) => {
+                        if (!switcher.contains(e.target)) {
+                            switcher.classList.remove('force-hidden');
+                        }
+                    }, { passive: true });
+                }
             });
 
             window.applyTheme = applyTheme;

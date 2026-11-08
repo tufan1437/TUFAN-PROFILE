@@ -628,6 +628,25 @@ h1 {
     pointer-events: auto !important;
     animation: toast-float 5s ease-in-out infinite;
 }
+
+/* Hide the showcase toast while the Theme Studio menu is open (menu opens on hover).
+   .theme-switcher precedes both chips in the DOM, so a sibling selector reaches them. */
+.theme-switcher:hover ~ .theme-rotate-toast,
+.theme-switcher:hover ~ #theme-resume-chip,
+.theme-switcher.force-hidden ~ .theme-rotate-toast,
+.theme-switcher.force-hidden ~ #theme-resume-chip {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transform: translate(12px, -6px) scale(0.96) !important;
+    filter: blur(4px);
+    transition: opacity 0.25s ease, transform 0.3s cubic-bezier(0.4,0,0.2,1), filter 0.25s ease !important;
+}
+/* Freeze the idle float so the hide transition isn't fighting an animation */
+.theme-switcher:hover ~ .theme-rotate-toast,
+.theme-switcher.force-hidden ~ .theme-rotate-toast {
+    animation: none !important;
+}
+
 .theme-rotate-toast.changing {
     animation: toast-flash 0.6s cubic-bezier(0.4,0,0.2,1) !important;
 }
@@ -668,6 +687,7 @@ h1 {
     opacity: 1 !important;
     pointer-events: auto !important;
     transform: translate(0, 0) !important;
+    transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.4,0,0.2,1) !important;
 }
 #theme-resume-chip #btn-resume-rotate:hover {
     transform: scale(1.04);
